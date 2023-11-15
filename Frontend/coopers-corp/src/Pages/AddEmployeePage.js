@@ -1,3 +1,4 @@
+
 import {FormControlLabel, Checkbox, Grid, Link} from "@material-ui/core";
 import Box from '@mui/system/Box';
 import Button from '@mui/material/Button';
@@ -13,10 +14,9 @@ export default function AddEmployee() {
         event.preventDefault();
         setOpenPopup(true);
       };
-
-      return ( 
-      <Container maxWidth='sm'>
-      <Box component ="form" onSubmit = {handleSubmit} display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} justifySelf='center' padding='20px'>
+  return ( 
+      <Container maxWidth='sm' justifySelf='center'>
+      <Box display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} bgcolor='#CAF0F8' justifySelf='center' padding='20px'>
       <TextField
       required 
       id = "employeeId"
@@ -61,5 +61,5 @@ export default function AddEmployee() {
         </Box>
       </Modal>
    </Container>
-      );
-    }
+  );
+}
