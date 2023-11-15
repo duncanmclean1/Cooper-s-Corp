@@ -1,11 +1,11 @@
-import {Typography, FormControlLabel, Checkbox, Grid, Link} from "@material-ui/core";
-import Box from '@mui/system/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Container from '@mui/material/Container';
+import {Typography, FormControlLabel, Checkbox, Grid, Link, TextField, Button, Box,Container} from "@material-ui/core";
+// import Box from '@mui/system/Box';
+// import Button from '@mui/material/Button';
+// import { TextField } from '@mui/material/TextField';
+// import Container from '@mui/material/Container';
 
 export default function AddEmployee() {
-      return ( 
+  return ( 
       <Container maxWidth='sm' justifySelf='center'>
       <Box display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} bgcolor='#CAF0F8' justifySelf='center' padding='20px'>
       <TextField
@@ -33,5 +33,5 @@ export default function AddEmployee() {
      </Button>
    </Box>
    </Container>
-      );
-    }
+  );
+}
