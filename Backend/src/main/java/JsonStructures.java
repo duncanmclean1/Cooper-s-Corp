@@ -1,7 +1,5 @@
 import java.util.ArrayList;
 
-import net.snowflake.client.jdbc.internal.javax.annotation.PreDestroy;
-
 public class JsonStructures {
     static class LoginJson {
         int EMPLOYEE_ID;
