@@ -54,7 +54,7 @@ public class CoopersHttpServer {
                 // authenticate user
                 boolean userIsAuthenticated = false;
                 try {
-                    userIsAuthenticated = authenticateUser(login.employee_ID, login.password);
+                    userIsAuthenticated = authenticateUser(login.EMPLOYEE_ID, login.PASSWORD);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -81,7 +81,12 @@ public class CoopersHttpServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // Handle requests for "/createorder" context
-            // ...
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString, JsonStructures.CreateOrderJson.class);
+                System.out.println(createOrder);
+            }
         }
     }
 
@@ -113,8 +118,8 @@ public class CoopersHttpServer {
         // create contexts to handle different endpoints
         backendServer.createContext("/api/login", new LoginHandler());
         backendServer.createContext("/api/createorder", new CreateOrderHandler ());
-        backendServer.createContext("/api/vieworder", new ViewOrderHandler());
-        backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
+        //backendServer.createContext("/api/vieworder", new ViewOrderHandler());
+        //backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
 
         // start the backend server
         System.out.println("Running on port: 8001");
