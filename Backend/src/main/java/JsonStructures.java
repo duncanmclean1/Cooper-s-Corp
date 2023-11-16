@@ -1,6 +1,6 @@
 public class JsonStructures {
     static class LoginJson {
-        int employeeID;
+        int employee_ID;
         String password;
     }
 

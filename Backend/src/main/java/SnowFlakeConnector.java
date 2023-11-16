@@ -5,7 +5,6 @@ public class SnowFlakeConnector
     public static ResultSet sendQuery(String sqlQuery) throws SQLException {
         Connection connection = null;
         Statement statement = null;
-        ResultSet result = null;
 
         try {
             // Replace with your actual Snowflake credentials
@@ -36,13 +35,10 @@ public class SnowFlakeConnector
             statement.executeQuery("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
 
             // send, execute, and return results of requested query 'sqlQuery'
-            result = statement.executeQuery(sqlQuery);
-            statement.close();
-            connection.close();
+            return statement.executeQuery(sqlQuery);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return result;
+        return null;
     }
-
 }
