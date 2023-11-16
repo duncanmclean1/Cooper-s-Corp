@@ -1,11 +1,9 @@
 
-import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
+import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
 import Box from '@mui/system/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import React, {useState} from "react";
-import Modal from '@mui/material/Modal';
-import Typography from '@mui/material/Typography';
 export default function AddEmployee() {
     const [openPopup, setOpenPopup] = useState(false);
     const arr = [1111, 2222, 3333];

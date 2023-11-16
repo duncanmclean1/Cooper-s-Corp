@@ -6,7 +6,7 @@ import { Grid,Button, Typography } from "@material-ui/core";
         <Grid item container justifyContent="center" alignContent="center">
             <Typography variant="h2">Coopers-Corp</Typography>
         </Grid>
-        <Grid container justifyContent="center" alignContent="center" direction="column" spacing={2}>
+        <Grid item container justifyContent="center" alignContent="center" direction="column" spacing={2}>
             <Grid item spacing={2}>
                 <Button variant="outlined" href="/createorder">
                     Create Order
