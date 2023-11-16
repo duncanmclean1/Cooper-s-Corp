@@ -5,14 +5,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import com.google.gson.Gson;
 
-public class CoopersHttpServer
-{
+public class CoopersHttpServer {
 
     // Helper method to read the request body from an InputStream
     private static String readRequestBody(InputStream requestBody) throws IOException {
@@ -26,9 +25,10 @@ public class CoopersHttpServer
         }
     }
 
-    public static boolean authenticateUser(int employeeID, String password) throws SQLException {
+    public static boolean authenticateUser(int employee_ID, String password) throws SQLException {
         // send corresponding query to snowflake
-        String sqlQuery = "SELECT * FROM Employee WHERE employee_id = "+ employeeID + " and password = '" + password + "';";
+        String sqlQuery = "SELECT * FROM Employee WHERE EMPLOYEE_ID = " + employee_ID + " AND PASSWORD = '" + password + "';";
+
         ResultSet resultSet;
         try {
             resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
@@ -53,16 +53,23 @@ public class CoopersHttpServer
                 // authenticate user
                 boolean userIsAuthenticated = false;
                 try {
-                    userIsAuthenticated = authenticateUser(login.employeeID, login.password);
+                    userIsAuthenticated = authenticateUser(login.employee_ID, login.password);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
 
                 // send corresponding response to frontend
-                if ( userIsAuthenticated ) {
+                String response;
+                if (userIsAuthenticated) {
                     exchange.sendResponseHeaders(200, 0); // authorized status code
+                    response = "authorized";
                 } else {
                     exchange.sendResponseHeaders(401, 0); // unauthorized status code
+                    response = "unauthorized";
+
+                }
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
                 }
             }
         }
@@ -92,7 +99,7 @@ public class CoopersHttpServer
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         // start the backend server
         HttpServer backendServer;
         try {
