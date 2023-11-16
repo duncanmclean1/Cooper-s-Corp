@@ -1,0 +1,25 @@
+POST localhost:8001/api/login
+{
+  "EMPLOYEE_ID": 1111,
+  "PASSWORD": "passworrd123"
+}
+
+POST localhost:8001/api/createorder
+{
+    "EMPLOYEE_ID": 1111,
+    "PHONE_NUMBER": "123-456-7890",
+    "ADDRESS": "123 Main St",
+    "ZIPCODE_KEY": 12345,
+    "ORDER_DETAILS": [
+        {
+        "PRODUCT_ID": 3,
+        "QUANTITY": 2,
+        "NOTES": "light on the pepperoni please"
+        },
+        {
+        "PRODUCT_ID": 5,
+        "QUANTITY": 1,
+        "NOTES": "null"
+        }
+    ]
+}
