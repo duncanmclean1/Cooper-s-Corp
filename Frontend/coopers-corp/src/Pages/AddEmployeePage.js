@@ -1,9 +1,11 @@
 
-import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
+import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
 import Box from '@mui/system/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import React, {useState} from "react";
+import Modal from '@mui/material/Modal';
+import Typography from '@mui/material/Typography';
 export default function AddEmployee() {
     const [openPopup, setOpenPopup] = useState(false);
     const [employeeId, setEmployeeId] = useState({employeeID: ""});
@@ -68,18 +70,17 @@ export default function AddEmployee() {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Use Google's location service?"}
+          {"Confirmation"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending anonymous
-            location data to Google, even when no apps are running.
+            Are 
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleClose}>Cancel</Button>
           <Button onClick={handleClose} autoFocus>
-            Agree
+            Submit
           </Button>
         </DialogActions>
       </Dialog>
