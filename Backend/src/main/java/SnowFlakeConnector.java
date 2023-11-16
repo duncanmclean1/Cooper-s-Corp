@@ -3,9 +3,7 @@ import java.sql.*;
 public class SnowFlakeConnector
 {
     public static ResultSet sendQuery(String sqlQuery) throws SQLException {
-        Connection connection = null;
-        Statement statement = null;
-
+        
         try {
             // Replace with your actual Snowflake credentials
             String sfAccount = "YJNIQQS-PM93114";
@@ -20,14 +18,14 @@ public class SnowFlakeConnector
             Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
 
             // Create a connection
-            connection = DriverManager.getConnection(
+            Connection connection = DriverManager.getConnection(
                     "jdbc:snowflake://" + sfAccount + ".snowflakecomputing.com",
                     sfUsername,
                     sfPassword
             );
 
             // Set the session parameters (optional)
-            statement = connection.createStatement();
+            Statement statement = connection.createStatement();
             statement.execute("USE WAREHOUSE " + sfWarehouse);
             statement.execute("USE DATABASE " + sfDatabase);
             statement.execute("USE SCHEMA " + sfSchema);
