@@ -1,15 +1,29 @@
-import {Card, Button} from "@material-ui/core";
-export default function DashboardPage()
-{
+import { Grid,Button, Typography } from "@material-ui/core";
+
+  export default function App() {  
     return (
-    <Card spacing={6} direction="column">
-      <Button variant="outlined" href="/createorder">Create Order</Button>
-      <Button variant="outlined" href="/vieworder">
-        View Order
-      </Button>
-      <Button variant="outlined" href="/editemployee">
-        Edit Employee
-      </Button>
-    </Card>
+    <Grid container spacing={2}>
+        <Grid item container justifyContent="center" alignContent="center">
+            <Typography variant="h2">Coopers-Corp</Typography>
+        </Grid>
+        <Grid container justifyContent="center" alignContent="center" direction="column" spacing={2}>
+            <Grid item spacing={2}>
+                <Button variant="outlined" href="/createorder">
+                    Create Order
+                </Button>
+            </Grid>
+            <Grid item spacing={2}>
+                <Button variant="outlined" href="/vieworder">
+                    View Order
+                </Button>
+            </Grid>
+            <Grid item spacing={2}>
+                <Button variant="outlined" href="/test">
+                    Edit Employee
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
     );
-}
+  }
+  
