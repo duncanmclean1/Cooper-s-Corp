@@ -65,10 +65,10 @@ public class CoopersHttpServer {
                 String response;
                 if (userIsAuthenticated) {
                     exchange.sendResponseHeaders(200, 0); // authorized status code
-                    response = "{\"isAuthorized\": \"true\"}";
+                    response = "{\"isAuthorized\": true}";
                 } else {
                     exchange.sendResponseHeaders(401, 0); // unauthorized status code
-                    response = "{\"isAuthorized\": \"false\"}";
+                    response = "{\"isAuthorized\": false}";
 
                 }
                 try (OutputStream os = exchange.getResponseBody()) {
