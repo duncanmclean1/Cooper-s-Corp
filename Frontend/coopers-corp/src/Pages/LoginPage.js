@@ -20,7 +20,7 @@ export default function Login() {
         };
         fetch('/api/login', example)
         .then(response => {
-            response.json()
+            response.text();
         })
         .then(data => {
           console.log(data)
