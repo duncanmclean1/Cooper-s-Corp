@@ -6,7 +6,8 @@ import Container from '@mui/material/Container';
 import React, {useState} from "react";
 export default function AddEmployee() {
     const [openPopup, setOpenPopup] = useState(false);
-    const arr = [1111, 2222, 3333];
+    const [employeeId, setEmployeeId] = useState({employeeID: ""});
+    const arr = ["1111", "2222", "3333"];
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -20,6 +21,10 @@ export default function AddEmployee() {
         event.preventDefault();
         setOpenPopup(true);
       }
+      const handleEmployeeId = employeeID => event => {
+        setEmployeeId({...employeeId, [employeeID]: event.target.value})
+      }
+      const error = arr.includes(employeeId.employeeID); 
   return ( 
       <Container maxWidth='sm' justifySelf='center'>
       <Box component = 'form' onClick = {handleSubmit} display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} justifySelf='center' padding='20px'>
@@ -28,6 +33,10 @@ export default function AddEmployee() {
       id = "employeeId"
       name = "employeeId"
       label="Employee ID"
+      value = {employeeId.employeeId}
+      onChange={handleEmployeeId("employeeID")}
+      helperText={error ? "Employee ID already exists" : ""}
+      error={error}
       autoFocus
      />
       <TextField
