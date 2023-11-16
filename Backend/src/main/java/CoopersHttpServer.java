@@ -172,7 +172,7 @@ public class CoopersHttpServer {
                     System.out.println("Sent Query");
                     SnowFlakeConnector.sendQuery(sqlQuery);
                     exchange.sendResponseHeaders(200, 0);
-                    response = "Employee added";
+                    response = "{\"isAdded:\": \"true\"}";
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
                     response = "SQL error";
