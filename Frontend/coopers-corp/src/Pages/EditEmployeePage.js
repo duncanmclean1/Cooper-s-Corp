@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import React, {useState} from "react";
 //after adding a new employee set status to active 
-export default function AddEmployee() {
+export default function EditEmployee() {
     const [openPopup, setOpenPopup] = useState(false);
     const [errorPopup, setErrorPopup] = useState(false);
     const [employeeId, setEmployeeId] = useState({employeeId: ""});

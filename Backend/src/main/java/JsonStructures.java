@@ -21,6 +21,18 @@ public class JsonStructures {
     }
     }
 
+    static class AddEmployeeJson {
+        int EMPLOYEE_ID;
+        String FIRST_NAME;
+        String LAST_NAME;
+        String PASSWORD;
+
+        @Override
+        public String toString(){
+            return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nFIRST_NAME: " + FIRST_NAME + "\nLAST_NAME: " + LAST_NAME + "\nPASSWORD: " + PASSWORD;
+        }
+    }
+
 }
 
 class OrderDetail {

@@ -23,3 +23,11 @@ POST localhost:8001/api/createorder
         }
     ]
 }
+
+POST localhost:8001/api/addemployee
+{
+    "EMPLOYEE_ID": 9999,
+    "FIRST_NAME": "Joe",
+    "LAST_NAME": "Mama",
+    "PASSWORD": "password123"
+}
