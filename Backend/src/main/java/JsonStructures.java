@@ -25,7 +25,7 @@ public class JsonStructures {
             int PRODUCT_ID;
             int QUANTITY;
             String NOTES;
-
+          
             public OrderDetail(int PRODUCT_ID, int QUANTITY, String NOTES) {
                 this.PRODUCT_ID = PRODUCT_ID;
                 this.QUANTITY = QUANTITY;
@@ -38,7 +38,19 @@ public class JsonStructures {
             }
         }
     }
+  
+    static class AddEmployeeJson {
+        int EMPLOYEE_ID;
+        String FIRST_NAME;
+        String LAST_NAME;
+        String PASSWORD;
 
+        @Override
+        public String toString(){
+            return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nFIRST_NAME: " + FIRST_NAME + "\nLAST_NAME: " + LAST_NAME + "\nPASSWORD: " + PASSWORD;
+        }
+    }
+  
     static class CheckForCustomerJson {
         String PHONE_NUMBER;
     }

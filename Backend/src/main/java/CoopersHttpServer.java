@@ -46,6 +46,7 @@ public class CoopersHttpServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // Handle requests for "/api/login" context
+            System.out.println("Login Handler API called");
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
@@ -64,14 +65,15 @@ public class CoopersHttpServer {
                 String response;
                 if (userIsAuthenticated) {
                     exchange.sendResponseHeaders(200, 0); // authorized status code
-                    response = "authorized";
+                    response = "{\"isAuthorized\": \"true\"}";
                 } else {
                     exchange.sendResponseHeaders(401, 0); // unauthorized status code
-                    response = "unauthorized";
+                    response = "{\"isAuthorized\": \"false\"}";
 
                 }
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.getBytes());
+                    System.out.println("Sent response");
                 }
             }
         }
@@ -149,6 +151,46 @@ public class CoopersHttpServer {
         }
     }
 
+    static class AddEmployeeHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            // Handle requests for "/createorder" context
+            System.out.println("Add Employee API Called");
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.AddEmployeeJson addEmployee = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.AddEmployeeJson.class);
+
+                String sqlQuery = "INSERT INTO Employee VALUES (" + addEmployee.EMPLOYEE_ID + ", '"
+                        + addEmployee.FIRST_NAME + "', '" + addEmployee.LAST_NAME + "', 'active', '"
+                        + addEmployee.PASSWORD + "');";
+
+                String response;
+
+                try {
+                    System.out.println("Sent Query");
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                    response = "Employee added";
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "SQL error";
+                    e.printStackTrace();
+                }
+
+               // System.out.println("Query executed");
+
+                
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
+
+            }
+        }
+    }
+
     public static void main(String[] args) throws SQLException {
         // start the backend server
         HttpServer backendServer;
@@ -164,8 +206,10 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
         backendServer.createContext("/api/vieworder", new ViewOrderHandler());
         backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
+        backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
 
         // start the backend server
+        System.out.println("Running on port: 8001\n");
         backendServer.start();
     }
 }
