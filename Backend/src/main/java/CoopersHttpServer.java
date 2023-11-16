@@ -45,6 +45,7 @@ public class CoopersHttpServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // Handle requests for "/api/login" context
+            System.out.println("Login Handler API called");
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
@@ -70,6 +71,7 @@ public class CoopersHttpServer {
                 }
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.getBytes());
+                    System.out.println("Sent response");
                 }
             }
         }
@@ -115,6 +117,7 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
 
         // start the backend server
+        System.out.println("Running on port: 8001");
         backendServer.start();
     }
 }
