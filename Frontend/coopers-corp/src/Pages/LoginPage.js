@@ -11,6 +11,21 @@ export default function Login() {
           password: data.get("password"),
         });
       };
+ 
+      useEffect(() => {
+        const example = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json'},
+          body: JSON.stringify({title: 'example'})
+        };
+        fetch('/api/login', example)
+        .then(response => {
+            response.json()
+        })
+        .then(data => {
+          console.log(data)
+        })
+      }, [])
 
       return (
         <Container component="main" maxWidth="xs">
