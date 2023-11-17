@@ -106,15 +106,17 @@ public class CoopersHttpServer {
                 JsonStructures.CheckForCustomerJson checkForCustomer = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CheckForCustomerJson.class);
 
-                // send query to snowflake to check if PHONE_NUMBER is already in the Customer table
-                String sqlQuery = "SELECT * FROM Customer WHERE PHONE_NUMBER = '" + checkForCustomer.PHONE_NUMBER + "';";
+                // send query to snowflake to check if PHONE_NUMBER is already in the Customer
+                // table
+                String sqlQuery = "SELECT * FROM Customer WHERE PHONE_NUMBER = '" + checkForCustomer.PHONE_NUMBER
+                        + "';";
                 ResultSet resultSet;
                 try {
                     resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-                
+
                 // grab query results
                 int ZIPCODE_KEY;
                 String ADDRESS, response;
@@ -165,9 +167,9 @@ public class CoopersHttpServer {
                 JsonStructures.AddEmployeeJson addEmployee = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.AddEmployeeJson.class);
 
-                String sqlQuery = "INSERT INTO Employee VALUES (" + addEmployee.EMPLOYEE_ID + ", '"
-                        + addEmployee.FIRST_NAME + "', '" + addEmployee.LAST_NAME + "', 'active', '"
-                        + addEmployee.PASSWORD + "');";
+                String sqlQuery = "INSERT INTO Employee VALUES ('" + addEmployee.FIRST_NAME + "', '"
+                        + addEmployee.LAST_NAME + "', 'active', '"
+                        + addEmployee.PASSWORD + "', EMPLOYEE_ID_SEQ.nextval);";
 
                 String response;
 
@@ -182,9 +184,6 @@ public class CoopersHttpServer {
                     e.printStackTrace();
                 }
 
-               // System.out.println("Query executed");
-
-                
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.getBytes());
                     System.out.println("Sent response\n");
