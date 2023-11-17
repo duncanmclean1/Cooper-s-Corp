@@ -91,9 +91,19 @@ public class CoopersHttpServer {
                         JsonStructures.CreateOrderJson.class);
                 //System.out.println(createOrder);
 
-                String sqlString = "INSERT INTO CUSTOMER_ORDER (order_number, employee_id, phone_number, date) VALUES (...)";
-
-                String sqlString2 = "INSERT INTO CUSTOMER VALUES (PHONE_NUMBER, ZIP_CODE, ADDRESS) VALUES (...);";
+                if ( createOrder.CUSTOMER_IS_NEW ) {
+                    String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + createOrder.PHONE_NUMBER
+                                                                    + "', " + createOrder.ZIPCODE_KEY
+                                                                    + ", '" + createOrder.ADDRESS + "');";
+                    System.out.println(sqlQuery);
+                    ResultSet resultSet;
+                    try {
+                        resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                String sqlQuery = "INSERT INTO CUSTOMER_ORDER VALUES (ORDER_NUMBER_SEQ.nextval, employee_id, phone_number, date) VALUES (...)";
 
             }
         }
