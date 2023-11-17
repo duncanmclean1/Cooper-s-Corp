@@ -1,33 +1,85 @@
-POST localhost:8001/api/login
-{
-  "EMPLOYEE_ID": 1111,
-  "PASSWORD": "passworrd123"
-}
-
-POST localhost:8001/api/createorder
-{
-    "EMPLOYEE_ID": 1111,
-    "PHONE_NUMBER": "123-456-7890",
-    "ADDRESS": "123 Main St",
-    "ZIPCODE_KEY": 12345,
-    "ORDER_DETAILS": [
+ENDPOINT: localhost:8001/api/login:
+    REQUEST METHOD:
+        POST
+    REQUEST BODY:
         {
-            "PRODUCT_ID": 3,
-            "QUANTITY": 2,
-            "NOTES": "light on the pepperoni please"
-        },
-        {
-            "PRODUCT_ID": 5,
-            "QUANTITY": 1,
-            "NOTES": "null"
+            "EMPLOYEE_ID": 1111,
+            "PASSWORD": "password123"
         }
-    ]
-}
 
-POST localhost:8001/api/addemployee
-{
-    "EMPLOYEE_ID": 9999,
-    "FIRST_NAME": "Joe",
-    "LAST_NAME": "Mama",
-    "PASSWORD": "password123"
-}
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 401
+    RESPONSE BODY:
+        {
+            "isAuthorized": true
+        }
+
+
+
+ENDPOINT: localhost:8001/api/createorder
+    REQUEST METHOD:
+        POST
+    REQUEST BODY:
+        {
+            "EMPLOYEE_ID": 1111,
+            "PHONE_NUMBER": "123-456-7890",
+            "ADDRESS": "123 Main St",
+            "ZIPCODE_KEY": 12345,
+            "ORDER_DETAILS": [
+                {
+                    "PRODUCT_ID": 3,
+                    "QUANTITY": 2,
+                    "NOTES": "light on the pepperoni please"
+                },
+                {
+                    "PRODUCT_ID": 5,
+                    "QUANTITY": 1,
+                    "NOTES": "null"
+                }
+            ]
+        }
+
+    RESPONSE CODE(S):
+
+    RESPONSE BODY:
+
+
+
+ENDPOINT: localhost:8001/api/checkforcustomer
+    REQUEST METHOD:
+        POST
+    REQUEST BODY:
+        {
+            "PHONE_NUMBER": "123-456-7890"
+        }
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 404
+    RESPONSE BODY:
+        {
+            "ZIPCODE_KEY": 12345,
+            "ADDRESS":  "123 Main St"
+        }
+
+
+
+ENDPOINT: localhost:8001/api/addemployee
+    REQUEST METHOD: 
+        POST
+    REQUEST BODY:
+        {
+            "EMPLOYEE_ID": 9999,
+            "FIRST_NAME": "Joe",
+            "LAST_NAME": "Mama",
+            "PASSWORD": "password123"
+        }
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 422
+    RESPONSE BODY:
+        {
+            ...
+        }

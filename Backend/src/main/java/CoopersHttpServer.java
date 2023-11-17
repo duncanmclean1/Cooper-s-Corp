@@ -46,7 +46,7 @@ public class CoopersHttpServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // Handle requests for "/api/login" context
-            System.out.println("Login Handler API called");
+            System.out.println("Login API called");
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
@@ -65,10 +65,10 @@ public class CoopersHttpServer {
                 String response;
                 if (userIsAuthenticated) {
                     exchange.sendResponseHeaders(200, 0); // authorized status code
-                    response = "{\"isAuthorized\": \"true\"}";
+                    response = "{\"isAuthorized\": true}";
                 } else {
                     exchange.sendResponseHeaders(401, 0); // unauthorized status code
-                    response = "{\"isAuthorized\": \"false\"}";
+                    response = "{\"isAuthorized\": false}";
 
                 }
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -82,6 +82,7 @@ public class CoopersHttpServer {
     static class CreateOrderHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Create Order API Called");
             // Handle requests for "/createorder" context
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
@@ -89,6 +90,50 @@ public class CoopersHttpServer {
                 JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CreateOrderJson.class);
                 System.out.println(createOrder);
+
+            }
+        }
+    }
+
+    static class CheckForCustomerHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Check For Customer API Called");
+            // Handle requests for "/api/checkforcustomer" context
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.CheckForCustomerJson checkForCustomer = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.CheckForCustomerJson.class);
+
+                // send query to snowflake to check if PHONE_NUMBER is already in the Customer table
+                String sqlQuery = "SELECT * FROM Customer WHERE PHONE_NUMBER = '" + checkForCustomer.PHONE_NUMBER + "';";
+                ResultSet resultSet;
+                try {
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                
+                // grab query results
+                int ZIPCODE_KEY;
+                String ADDRESS, response;
+                try {
+                    resultSet.next();
+                    ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
+                    ADDRESS = resultSet.getString("ADDRESS");
+                    exchange.sendResponseHeaders(200, 0); // PHONE_NUMBER found
+                    response = "{\n\t\"ZIPCODE_KEY\": " + ZIPCODE_KEY + "\n\t\"ADDRESS\": \'" + ADDRESS + "'\n}";
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    exchange.sendResponseHeaders(404, 0); // PHONE_NUMBER not found
+                    response = "PHONE_NUMBER not found";
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                }
+                System.out.println("Sent response");
             }
         }
     }
@@ -130,7 +175,7 @@ public class CoopersHttpServer {
                     System.out.println("Sent Query");
                     SnowFlakeConnector.sendQuery(sqlQuery);
                     exchange.sendResponseHeaders(200, 0);
-                    response = "Employee added";
+                    response = "{\"isAdded:\": \"true\"}";
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
                     response = "SQL error";
@@ -161,9 +206,9 @@ public class CoopersHttpServer {
         // create contexts to handle different endpoints
         backendServer.createContext("/api/login", new LoginHandler());
         backendServer.createContext("/api/createorder", new CreateOrderHandler());
-        // backendServer.createContext("/api/vieworder", new ViewOrderHandler());
-        // backendServer.createContext("/api/editemployees", new
-        // EditEmployeesHandler());
+        backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
+        backendServer.createContext("/api/vieworder", new ViewOrderHandler());
+        backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
         backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
 
         // start the backend server
