@@ -27,7 +27,7 @@ public class CoopersHttpServer {
 
     public static boolean authenticateUser(int employee_ID, String password) throws SQLException {
         // send corresponding query to snowflake
-        String sqlQuery = "SELECT * FROM Employee WHERE EMPLOYEE_ID = " + employee_ID + " AND PASSWORD = '" + password
+        String sqlQuery = "SELECT * FROM EMPLOYEE WHERE EMPLOYEE_ID = " + employee_ID + " AND PASSWORD = '" + password
                 + "';";
 
         ResultSet resultSet;
@@ -89,7 +89,11 @@ public class CoopersHttpServer {
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
                 JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CreateOrderJson.class);
-                System.out.println(createOrder);
+                //System.out.println(createOrder);
+
+                String sqlString = "INSERT INTO CUSTOMER_ORDER (order_number, employee_id, phone_number, date) VALUES (...)";
+
+                String sqlString2 = "INSERT INTO CUSTOMER VALUES (PHONE_NUMBER, ZIP_CODE, ADDRESS) VALUES (...);";
 
             }
         }
@@ -106,15 +110,17 @@ public class CoopersHttpServer {
                 JsonStructures.CheckForCustomerJson checkForCustomer = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CheckForCustomerJson.class);
 
-                // send query to snowflake to check if PHONE_NUMBER is already in the Customer table
-                String sqlQuery = "SELECT * FROM Customer WHERE PHONE_NUMBER = '" + checkForCustomer.PHONE_NUMBER + "';";
+                // send query to snowflake to check if PHONE_NUMBER is already in the Customer
+                // table
+                String sqlQuery = "SELECT * FROM Customer WHERE PHONE_NUMBER = '" + checkForCustomer.PHONE_NUMBER
+                        + "';";
                 ResultSet resultSet;
                 try {
                     resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-                
+
                 // grab query results
                 int ZIPCODE_KEY;
                 String ADDRESS, response;
@@ -165,9 +171,9 @@ public class CoopersHttpServer {
                 JsonStructures.AddEmployeeJson addEmployee = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.AddEmployeeJson.class);
 
-                String sqlQuery = "INSERT INTO Employee VALUES (" + addEmployee.EMPLOYEE_ID + ", '"
-                        + addEmployee.FIRST_NAME + "', '" + addEmployee.LAST_NAME + "', 'active', '"
-                        + addEmployee.PASSWORD + "');";
+                String sqlQuery = "INSERT INTO Employee VALUES ('" + addEmployee.FIRST_NAME + "', '"
+                        + addEmployee.LAST_NAME + "', 'active', '"
+                        + addEmployee.PASSWORD + "', EMPLOYEE_ID_SEQ.nextval);";
 
                 String response;
 
@@ -182,9 +188,6 @@ public class CoopersHttpServer {
                     e.printStackTrace();
                 }
 
-               // System.out.println("Query executed");
-
-                
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.getBytes());
                     System.out.println("Sent response\n");
