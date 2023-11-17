@@ -1,32 +1,44 @@
 import {Container, Box, Typography, TextField, Button, Grid, Link} from "@material-ui/core";
 import { useState } from "react";
 export default function Login() {
-      const [employeeId, setEmployeeId] = useState("");
-      const [password, setPassword] = useState("");
-
-      const validateForm = () =>
-      {
-        return employeeId > 0 && password.length > 0;
-      }
+      const [employeeId, setEmployeeId] = useState({employeeId:""});
+      const [password, setPassword] = useState({password: ""});
+  
+      // const validateForm = () =>
+      // {
+      //   return employeeId.employeeId > 0 && password.password > 0;
+      // }
       
       const handleSubmit = (event) => {
         event.preventDefault();
-        const example = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            employeeId: employeeId,
-            password: password
-          })
+        const login = {
+          "EMPLOYEE_ID": Number(employeeId.employeeId),
+          "PASSWORD": password.password
         };
-        fetch('/api/login', example)
-        .then(response => {
-            response.text();
+        fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(login),
         })
-        .then(data => {
-          console.log(data)
+        .then((response) => response.json())
+        .then((login) => {
+          console.log("Login:", login);
         })
+        .catch((error) => {
+          console.error(error)
+        });
       };
+      
+      const handleEmployeeId = employeeId => event => {
+        setEmployeeId({...employeeId, [employeeId]: event.target.value})
+      }
+      
+      const handlePassword = password => event => {
+        setPassword({...password, [password]: event.target.value})
+      }
+
       return (
         <Container component="main" maxWidth="xs">
           <Box
@@ -50,8 +62,8 @@ export default function Login() {
                 name="employee id"
                 autoComplete="employee id"
                 autoFocus
-                value={employeeId}
-                onChange={event => setEmployeeId(event.target.value)}
+                value={employeeId.employeeId}
+                onChange={handleEmployeeId("employeeId")}
               />
               <TextField
                 margin="normal"
@@ -62,8 +74,8 @@ export default function Login() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                value={password}
-                onChange={event => setPassword(event.target.value)}
+                value={password.password}
+                onChange={handlePassword("password")}
               />
               <Button
                 type="submit"
@@ -71,7 +83,7 @@ export default function Login() {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick={handleSubmit}
-                disabled={!validateForm()}
+                // disabled={!validateForm()}
               >
                 Sign In
               </Button>
