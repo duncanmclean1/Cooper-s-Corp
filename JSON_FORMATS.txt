@@ -23,6 +23,7 @@ ENDPOINT: localhost:8001/api/createorder
     REQUEST BODY:
         {
             "EMPLOYEE_ID": 1111,
+            "CUSTOMER_IS_NEW": true,
             "PHONE_NUMBER": "123-456-7890",
             "ADDRESS": "123 Main St",
             "ZIPCODE_KEY": 12345,

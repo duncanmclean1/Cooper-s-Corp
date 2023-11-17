@@ -27,7 +27,7 @@ public class CoopersHttpServer {
 
     public static boolean authenticateUser(int employee_ID, String password) throws SQLException {
         // send corresponding query to snowflake
-        String sqlQuery = "SELECT * FROM Employee WHERE EMPLOYEE_ID = " + employee_ID + " AND PASSWORD = '" + password
+        String sqlQuery = "SELECT * FROM EMPLOYEE WHERE EMPLOYEE_ID = " + employee_ID + " AND PASSWORD = '" + password
                 + "';";
 
         ResultSet resultSet;
@@ -89,7 +89,11 @@ public class CoopersHttpServer {
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
                 JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CreateOrderJson.class);
-                System.out.println(createOrder);
+                //System.out.println(createOrder);
+
+                String sqlString = "INSERT INTO CUSTOMER_ORDER (order_number, employee_id, phone_number, date) VALUES (...)";
+
+                String sqlString2 = "INSERT INTO CUSTOMER VALUES (PHONE_NUMBER, ZIP_CODE, ADDRESS) VALUES (...);";
 
             }
         }
