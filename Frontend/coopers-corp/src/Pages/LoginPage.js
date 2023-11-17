@@ -14,7 +14,10 @@ export default function Login() {
         const example = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json'},
-          body: JSON.stringify({title: 1})
+          body: JSON.stringify({
+            employeeId: employeeId,
+            password: password
+          })
         };
         fetch('/api/login', example)
         .then(response => {
@@ -67,7 +70,7 @@ export default function Login() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onSubmit={handleSubmit}
+                onClick={handleSubmit}
                 disabled={!validateForm()}
               >
                 Sign In
