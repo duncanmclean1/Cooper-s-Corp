@@ -40,7 +40,7 @@ export default function Login() {
       }
 
       return (
-        <Container component="main" maxWidth="xs">
+        <Container component="main" maxWidth="sm" style={{backgroundColor: "orange"}}>
           <Box
             sx={{  
               marginTop: 8,
@@ -58,9 +58,10 @@ export default function Login() {
                 required
                 fullWidth
                 id="employee id"
-                label="Employee Id"
+                label="Employee-Id"
                 name="employee id"
                 autoComplete="employee id"
+                variant="outlined"
                 autoFocus
                 value={employeeId.employeeId}
                 onChange={handleEmployeeId("employeeId")}
@@ -74,6 +75,7 @@ export default function Login() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                variant="outlined"
                 value={password.password}
                 onChange={handlePassword("password")}
               />
@@ -83,17 +85,10 @@ export default function Login() {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick={handleSubmit}
-                // disabled={!validateForm()}
+             //   disabled={!validateForm()}
               >
                 Sign In
               </Button>
-              <Grid container className="center">
-                <Grid item>
-                  <Link href="/addEmployee" variant="body2">
-                    {"Don't have an account? Sign Up"}
-                  </Link>
-                </Grid>
-              </Grid>
             </Box>
           </Box>
         </Container>
