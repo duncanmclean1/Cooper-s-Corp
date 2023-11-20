@@ -10,31 +10,31 @@ public class JsonStructures {
     static class CreateOrderJson {
         int EMPLOYEE_ID;
         String PHONE_NUMBER;
-        String ADDRESS;
-        String ZIPCODE_KEY;
+        String TIME;
         ArrayList<OrderDetail> ORDER_DETAILS;
 
         @Override
         public String toString() {
             return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nPHONE_NUMBER: " + PHONE_NUMBER
-                    + "\nADDRESS: " + ADDRESS + "\nZIPCODE_KEY: " 
-                    + ZIPCODE_KEY + "\n" + ORDER_DETAILS;
+                    + "\nTIME: " + TIME + "\n" + ORDER_DETAILS;
         }
 
         class OrderDetail {
             int PRODUCT_ID;
+            double PRICE_PAID;
             int QUANTITY;
             String NOTES;
           
-            public OrderDetail(int PRODUCT_ID, int QUANTITY, String NOTES) {
+            public OrderDetail(int PRODUCT_ID, double PRICE_PAID, int QUANTITY, String NOTES) {
                 this.PRODUCT_ID = PRODUCT_ID;
+                this.PRICE_PAID = PRICE_PAID;
                 this.QUANTITY = QUANTITY;
                 this.NOTES = NOTES;
             }
 
             @Override
             public String toString() {
-                return "\n{\n\tPRODUCT_ID: " + PRODUCT_ID + "\n\tQUANTITY: " + QUANTITY + "\n\tNOTES: " + NOTES + "\n}";
+                return "\n{\n\tPRODUCT_ID: " + PRODUCT_ID + "\n\tPRICE_PAID: " + PRICE_PAID + "\n\tQUANTITY: " + QUANTITY + "\n\tNOTES: " + NOTES + "\n}\n";
             }
         }
     }
