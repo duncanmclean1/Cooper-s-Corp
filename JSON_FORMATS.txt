@@ -24,24 +24,26 @@ ENDPOINT: localhost:8001/api/createorder
         {
             "EMPLOYEE_ID": 1111,
             "PHONE_NUMBER": "123-456-7890",
-            "ADDRESS": "123 Main St",
-            "ZIPCODE_KEY": 12345,
+            "TIME": "2023-11-20 22:45:36",
             "ORDER_DETAILS": [
                 {
                     "PRODUCT_ID": 3,
+                    "PRICE_PAID": 22.60,
                     "QUANTITY": 2,
                     "NOTES": "light on the pepperoni please"
                 },
                 {
                     "PRODUCT_ID": 5,
+                    "PRICE_PAID": 12.59,
                     "QUANTITY": 1,
-                    "NOTES": "null"
+                    "NOTES": ""
                 }
             ]
         }
 
     RESPONSE CODE(S):
-
+        SUCCESS: 201
+        FAILURE: 422
     RESPONSE BODY:
 
 
@@ -86,7 +88,6 @@ ENDPOINT: localhost:8001/api/addemployee
         }
 
 
-
 ENDPOINT: localhost:8001/api/showemployees
     REQUEST METHOD: 
         GET
@@ -103,10 +104,9 @@ ENDPOINT: localhost:8001/api/showemployees
             "FIRST_NAME": "Julian",
             "LAST_NAME": "Herman"
         }
-
-
-
-ENDPOINT: localhost:8001/api/addcustomer
+        
+    
+    ENDPOINT: localhost:8001/api/addcustomer
     REQUEST METHOD: 
         POST
     REQUEST BODY:
@@ -123,4 +123,26 @@ ENDPOINT: localhost:8001/api/addcustomer
     RESPONSE BODY:
         {
             "isAdded": true
+        }
+
+
+ENDPOINT: localhost:8001/api/updateemployee
+    REQUEST METHOD: 
+        POST
+    REQUEST BODY:
+        {
+            "EMPLOYEE_ID": 1234,
+            "FIRST_NAME": "Joe",
+            "LAST_NAME": "Mama",
+            "STATUS": false
+        }
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 422
+    
+    Can return true/false
+    RESPONSE BODY:
+        {
+            "isUpdated": true
         }

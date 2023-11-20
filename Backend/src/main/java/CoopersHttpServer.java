@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+
 import com.google.gson.Gson;
 
 public class CoopersHttpServer {
@@ -92,7 +94,6 @@ public class CoopersHttpServer {
                 String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + addCustomerJson.PHONE_NUMBER
                         + "', " + addCustomerJson.ZIPCODE_KEY
                         + ", '" + addCustomerJson.ADDRESS + "');";
-                System.out.println(sqlQuery);
 
                 String response;
                 try {
@@ -123,10 +124,44 @@ public class CoopersHttpServer {
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
                 JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CreateOrderJson.class);
-                // System.out.println(createOrder);
+                //System.out.println(createOrder);
 
-                String sqlQuery = "INSERT INTO CUSTOMER_ORDER VALUES (ORDER_NUMBER_SEQ.nextval, employee_id, phone_number, date) VALUES (...)";
+                String sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
+                        +
+                        createOrder.EMPLOYEE_ID + ", '" + createOrder.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('" + createOrder.TIME + "'));";
+                //System.out.println(sqlQuery);
 
+                String response;
+                try {
+                    // create a new CUSTOMER_ORDER record
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(201, 0);
+
+                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
+                    sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int ORDER_NUMBER = resultSet.getInt("MAX(ORDER_NUMBER)");
+                    //System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
+
+                    // for each ORDER_DETAIL, add a new record
+                    for ( var detail : createOrder.ORDER_DETAILS ) {
+                        sqlQuery = "INSERT INTO ORDER_DETAIL (PRODUCT_ID, ORDER_NUMBER, PRICE_PAID, QUANTITY, NOTES) VALUES (" + detail.PRODUCT_ID + ", " + ORDER_NUMBER + ", " + detail.PRICE_PAID + ", " + detail.QUANTITY + ", '" + detail.NOTES + "');";
+                        //System.out.println("sqlQuery: " + sqlQuery);
+                        SnowFlakeConnector.sendQuery(sqlQuery);
+                    }
+
+                    response = "{\"orderSuccessfullySubmitted:\": \"true\"}";
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "SQL error";
+                    e.printStackTrace();
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
             }
         }
     }
@@ -192,6 +227,55 @@ public class CoopersHttpServer {
         }
     }
 
+    static class ShowEmployeesHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Show Employees API Called");
+            if ("GET".equals(exchange.getRequestMethod())) {
+                String sqlQuery = "SELECT employee_id, first_name, last_name FROM Employee";
+                ResultSet resultSet;
+
+                // Sends query to get all employees (employee_id, first_name, last_name)
+                try {
+                    System.out.println("Query Sent");
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(404, 0);
+                    throw new RuntimeException(e);
+                }
+
+                ArrayList<JsonStructures.employeeDetails> list = new ArrayList<>();
+
+                try {
+                    // Creates employee objects and adds them to an ArrayList
+                    while (resultSet.next()) {
+                        JsonStructures.employeeDetails employee = new JsonStructures.employeeDetails();
+                        employee.setEmployeeID(resultSet.getString("EMPLOYEE_ID"));
+                        employee.setFirstName(resultSet.getString("FIRST_NAME"));
+                        employee.setLastName(resultSet.getString("LAST_NAME"));
+                        list.add(employee);
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                // Converts ArrayList to JSON format
+                Gson gson = new Gson();
+                String jsonResponse = gson.toJson(list);
+                System.out.println("Converting to JSON");
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(jsonResponse.getBytes());
+                    System.out.println("Sent response");
+                }
+
+            }
+
+        }
+    }
+
     static class AddEmployeeHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -229,6 +313,48 @@ public class CoopersHttpServer {
         }
     }
 
+    static class UpdateEmployeeHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Update Employee API Called");
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // Parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.UpdateEmployeeJson updateEmployee = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.UpdateEmployeeJson.class);
+
+                // Create query
+                String sqlQuery = "UPDATE Employee SET FIRST_NAME = '" + updateEmployee.FIRST_NAME
+                        + "', LAST_NAME = '" + updateEmployee.LAST_NAME
+                        + "', STATUS = '" + updateEmployee.STATUS + "' WHERE EMPLOYEE_ID = '"
+                        + updateEmployee.EMPLOYEE_ID + "';";
+
+                String response;
+
+                try {
+                    // Sends query
+                    System.out.println("Sent Query");
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                    response = "{\"isUpdated:\": \"true\"}";
+                } catch (SQLException e) {
+                    // Failed response
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "{\"isUpdated:\": \"false\"}";
+                    e.printStackTrace();
+                }
+
+                // Sends reponse to frontend
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
+
+            }
+
+        }
+    }
+
     public static void main(String[] args) throws SQLException {
         // start the backend server
         HttpServer backendServer;
@@ -246,6 +372,8 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/vieworder", new ViewOrderHandler());
         backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
         backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
+        backendServer.createContext("/api/showemployees", new ShowEmployeesHandler());
+        backendServer.createContext("/api/updateemployee", new UpdateEmployeeHandler());
 
         // start the backend server
         System.out.println("Running on port: 8001\n");
