@@ -50,6 +50,12 @@ public class JsonStructures {
             return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nFIRST_NAME: " + FIRST_NAME + "\nLAST_NAME: " + LAST_NAME + "\nPASSWORD: " + PASSWORD;
         }
     }
+
+    static class AddCustomerJson {
+        String PHONE_NUMBER;
+        String ADDRESS;
+        String ZIPCODE_KEY;
+    }
   
     static class CheckForCustomerJson {
         String PHONE_NUMBER;
