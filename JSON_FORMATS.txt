@@ -86,7 +86,6 @@ ENDPOINT: localhost:8001/api/addemployee
         }
 
 
-
 ENDPOINT: localhost:8001/api/showemployees
     REQUEST METHOD: 
         GET
@@ -103,10 +102,9 @@ ENDPOINT: localhost:8001/api/showemployees
             "FIRST_NAME": "Julian",
             "LAST_NAME": "Herman"
         }
-
-
-
-ENDPOINT: localhost:8001/api/addcustomer
+        
+    
+    ENDPOINT: localhost:8001/api/addcustomer
     REQUEST METHOD: 
         POST
     REQUEST BODY:

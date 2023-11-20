@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+
 import com.google.gson.Gson;
 
 public class CoopersHttpServer {
@@ -191,6 +193,55 @@ public class CoopersHttpServer {
         }
     }
 
+    static class ShowEmployeesHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Show Employees API Called");
+            if ("GET".equals(exchange.getRequestMethod())) {
+                String sqlQuery = "SELECT employee_id, first_name, last_name FROM Employee";
+                ResultSet resultSet;
+
+                // Sends query to get all employees (employee_id, first_name, last_name)
+                try {
+                    System.out.println("Query Sent");
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(404, 0);
+                    throw new RuntimeException(e);
+                }
+
+                ArrayList<JsonStructures.employeeDetails> list = new ArrayList<>();
+
+                try {
+                    // Creates employee objects and adds them to an ArrayList
+                    while (resultSet.next()) {
+                        JsonStructures.employeeDetails employee = new JsonStructures.employeeDetails();
+                        employee.setEmployeeID(resultSet.getString("EMPLOYEE_ID"));
+                        employee.setFirstName(resultSet.getString("FIRST_NAME"));
+                        employee.setLastName(resultSet.getString("LAST_NAME"));
+                        list.add(employee);
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                // Converts ArrayList to JSON format
+                Gson gson = new Gson();
+                String jsonResponse = gson.toJson(list);
+                System.out.println("Converting to JSON");
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(jsonResponse.getBytes());
+                    System.out.println("Sent response");
+                }
+
+            }
+
+        }
+    }
+
     static class AddEmployeeHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -245,6 +296,7 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/vieworder", new ViewOrderHandler());
         backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
         backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
+        backendServer.createContext("/api/showemployees", new ShowEmployeesHandler());
 
         // start the backend server
         System.out.println("Running on port: 8001\n");
