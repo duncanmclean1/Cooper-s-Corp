@@ -9,7 +9,6 @@ public class JsonStructures {
 
     static class CreateOrderJson {
         int EMPLOYEE_ID;
-        boolean CUSTOMER_IS_NEW;
         String PHONE_NUMBER;
         String ADDRESS;
         String ZIPCODE_KEY;
@@ -17,8 +16,8 @@ public class JsonStructures {
 
         @Override
         public String toString() {
-            return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nCUSTOMER_IS_NEW: " + CUSTOMER_IS_NEW
-                    + "\nPHONE_NUMBER: " + PHONE_NUMBER + "\nADDRESS: " + ADDRESS + "\nZIPCODE_KEY: " 
+            return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nPHONE_NUMBER: " + PHONE_NUMBER
+                    + "\nADDRESS: " + ADDRESS + "\nZIPCODE_KEY: " 
                     + ZIPCODE_KEY + "\n" + ORDER_DETAILS;
         }
 
@@ -50,6 +49,12 @@ public class JsonStructures {
         public String toString(){
             return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nFIRST_NAME: " + FIRST_NAME + "\nLAST_NAME: " + LAST_NAME + "\nPASSWORD: " + PASSWORD;
         }
+    }
+
+    static class AddCustomerJson {
+        String PHONE_NUMBER;
+        String ADDRESS;
+        String ZIPCODE_KEY;
     }
   
     static class CheckForCustomerJson {
