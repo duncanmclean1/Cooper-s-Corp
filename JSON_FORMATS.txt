@@ -23,7 +23,6 @@ ENDPOINT: localhost:8001/api/createorder
     REQUEST BODY:
         {
             "EMPLOYEE_ID": 1111,
-            "CUSTOMER_IS_NEW": true,
             "PHONE_NUMBER": "123-456-7890",
             "ADDRESS": "123 Main St",
             "ZIPCODE_KEY": 12345,
@@ -86,6 +85,7 @@ ENDPOINT: localhost:8001/api/addemployee
             "isAdded": true
         }
 
+
 ENDPOINT: localhost:8001/api/showemployees
     REQUEST METHOD: 
         GET
@@ -101,4 +101,24 @@ ENDPOINT: localhost:8001/api/showemployees
             "EMPLOYEE_ID": 1234,
             "FIRST_NAME": "Julian",
             "LAST_NAME": "Herman"
+        }
+        
+    
+    ENDPOINT: localhost:8001/api/addcustomer
+    REQUEST METHOD: 
+        POST
+    REQUEST BODY:
+        {
+            "PHONE_NUMBER": "123-456-7890",
+            "ADDRESS": "123 Main St",
+            "ZIPCODE_KEY": 12345
+        }
+
+    RESPONSE CODE(S):
+        SUCCESS: 201
+        FAILURE: 422
+    
+    RESPONSE BODY:
+        {
+            "isAdded": true
         }

@@ -81,11 +81,44 @@ public class CoopersHttpServer {
         }
     }
 
+    static class AddCustomerHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Add Customer API Called");
+            // Handle requests for "/api/addcustomer" context
+            if ("POST".equals(exchange.getRequestMethod())) {
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.AddCustomerJson addCustomerJson = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.AddCustomerJson.class);
+
+                String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + addCustomerJson.PHONE_NUMBER
+                        + "', " + addCustomerJson.ZIPCODE_KEY
+                        + ", '" + addCustomerJson.ADDRESS + "');";
+
+                String response;
+                try {
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(201, 0);
+                    response = "{\"isAdded:\": \"true\"}";
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "SQL error";
+                    e.printStackTrace();
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
+            }
+        }
+    }
+
     static class CreateOrderHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             System.out.println("Create Order API Called");
-            // Handle requests for "/createorder" context
+            // Handle requests for "/api/createorder" context
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
@@ -93,18 +126,6 @@ public class CoopersHttpServer {
                         JsonStructures.CreateOrderJson.class);
                 // System.out.println(createOrder);
 
-                if (createOrder.CUSTOMER_IS_NEW) {
-                    String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + createOrder.PHONE_NUMBER
-                            + "', " + createOrder.ZIPCODE_KEY
-                            + ", '" + createOrder.ADDRESS + "');";
-                    System.out.println(sqlQuery);
-                    ResultSet resultSet;
-                    try {
-                        resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
                 String sqlQuery = "INSERT INTO CUSTOMER_ORDER VALUES (ORDER_NUMBER_SEQ.nextval, employee_id, phone_number, date) VALUES (...)";
 
             }
@@ -269,6 +290,7 @@ public class CoopersHttpServer {
 
         // create contexts to handle different endpoints
         backendServer.createContext("/api/login", new LoginHandler());
+        backendServer.createContext("/api/addcustomer", new AddCustomerHandler());
         backendServer.createContext("/api/createorder", new CreateOrderHandler());
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
         backendServer.createContext("/api/vieworder", new ViewOrderHandler());
