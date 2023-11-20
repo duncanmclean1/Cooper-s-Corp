@@ -313,6 +313,48 @@ public class CoopersHttpServer {
         }
     }
 
+    static class UpdateEmployeeHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Update Employee API Called");
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // Parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.UpdateEmployeeJson updateEmployee = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.UpdateEmployeeJson.class);
+
+                // Create query
+                String sqlQuery = "UPDATE Employee SET FIRST_NAME = '" + updateEmployee.FIRST_NAME
+                        + "', LAST_NAME = '" + updateEmployee.LAST_NAME
+                        + "', STATUS = '" + updateEmployee.STATUS + "' WHERE EMPLOYEE_ID = '"
+                        + updateEmployee.EMPLOYEE_ID + "';";
+
+                String response;
+
+                try {
+                    // Sends query
+                    System.out.println("Sent Query");
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                    response = "{\"isUpdated:\": \"true\"}";
+                } catch (SQLException e) {
+                    // Failed response
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "{\"isUpdated:\": \"false\"}";
+                    e.printStackTrace();
+                }
+
+                // Sends reponse to frontend
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
+
+            }
+
+        }
+    }
+
     public static void main(String[] args) throws SQLException {
         // start the backend server
         HttpServer backendServer;
@@ -331,6 +373,7 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
         backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
         backendServer.createContext("/api/showemployees", new ShowEmployeesHandler());
+        backendServer.createContext("/api/updateemployee", new UpdateEmployeeHandler());
 
         // start the backend server
         System.out.println("Running on port: 8001\n");

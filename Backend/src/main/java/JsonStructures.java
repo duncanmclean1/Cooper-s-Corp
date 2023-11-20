@@ -51,6 +51,18 @@ public class JsonStructures {
         }
     }
 
+    static class UpdateEmployeeJson {
+        int EMPLOYEE_ID;
+        String FIRST_NAME;
+        String LAST_NAME;
+        boolean STATUS;
+
+        @Override
+        public String toString(){
+            return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nFIRST_NAME: " + FIRST_NAME + "\nLAST_NAME: " + LAST_NAME + "\n" + "STATUS: " + STATUS;
+        }
+    }
+
     static class AddCustomerJson {
         String PHONE_NUMBER;
         String ADDRESS;
