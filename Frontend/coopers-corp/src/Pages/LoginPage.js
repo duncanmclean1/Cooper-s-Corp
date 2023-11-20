@@ -1,14 +1,20 @@
-import {Container, Box, Typography, TextField, Button, Grid, Link} from "@material-ui/core";
+import {Container, Box, Typography, TextField, Button} from "@material-ui/core";
+import { Alert } from "@mui/material";
 import { useState } from "react";
 export default function Login() {
       const [employeeId, setEmployeeId] = useState({employeeId:""});
       const [password, setPassword] = useState({password: ""});
-  
-      // const validateForm = () =>
-      // {
-      //   return employeeId.employeeId > 0 && password.password > 0;
-      // }
+      const [data, setData] = useState(DEFAULT_DATA_INFO);
       
+      const handleMessage = () => {
+        if (data.alertType === "error") {
+          return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
+        }
+        else if (data.alertType === "success") {
+          return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
+        }
+      }
+
       const handleSubmit = (event) => {
         event.preventDefault();
         const login = {
@@ -22,12 +28,14 @@ export default function Login() {
           },
           body: JSON.stringify(login),
         })
-        .then((response) => response.json())
-        .then((login) => {
-          console.log("Login:", login);
+        .then(() => {
+            setData({
+              alertType: "success",
+              alertMessage: "Successfully logged in.",
+            }); 
         })
         .catch((error) => {
-          console.error(error)
+            console.log(error);
         });
       };
       
@@ -62,7 +70,6 @@ export default function Login() {
                 name="employee id"
                 autoComplete="employee id"
                 variant="outlined"
-                autoFocus
                 value={employeeId.employeeId}
                 onChange={handleEmployeeId("employeeId")}
               />
@@ -85,12 +92,17 @@ export default function Login() {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick={handleSubmit}
-             //   disabled={!validateForm()}
               >
                 Sign In
               </Button>
             </Box>
+            {handleMessage()}
           </Box>
         </Container>
       );
     }
+
+const DEFAULT_DATA_INFO = {
+  alertType: "",
+  alertMessage: "",
+}
