@@ -1,11 +1,12 @@
 import {Container, Box, Typography, TextField, Button} from "@material-ui/core";
 import { Alert } from "@mui/material";
-import { useState } from "react";
+import {useState } from "react";
+import {useNavigate} from "react-router-dom";
 export default function Login() {
       const [employeeId, setEmployeeId] = useState({employeeId:""});
       const [password, setPassword] = useState({password: ""});
       const [data, setData] = useState(DEFAULT_DATA_INFO);
-      
+      const navigate = useNavigate();
       const handleMessage = () => {
         if (data.alertType === "success") {
           return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
@@ -28,11 +29,22 @@ export default function Login() {
           },
           body: JSON.stringify(login),
         })
-        .then(() => {
+        .then((response) => response.json())
+        .then((login) => {
+          if (login.isAuthorized === true)
+          {
             setData({
               alertType: "success",
               alertMessage: "Successfully logged in.",
-            }); 
+            });
+            navigate("/dashboard");
+          }
+          else {
+            setData({
+              alertType: "error",
+              alertMessage: "Enter correct employee id or password",
+             });
+          }
         })
         .catch((error) => {
            setData({
@@ -51,7 +63,7 @@ export default function Login() {
       }
 
       return (
-        <Container component="main" maxWidth="sm" style={{backgroundColor: "orange"}}>
+        <Container component="main" maxWidth="sm">
           <Box
             sx={{  
               marginTop: 8,
@@ -94,7 +106,8 @@ export default function Login() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick={handleSubmit}
+               onClick={handleSubmit}
+                href="/dashboard"
               >
                 Sign In
               </Button>
