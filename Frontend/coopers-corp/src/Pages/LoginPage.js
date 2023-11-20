@@ -75,7 +75,7 @@ export default function Login() {
             <Typography component="h1" variant="h5">
               Login To Coopers-Corp
             </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <Box component="form" noValidate sx={{ mt: 1 }}>
               <TextField
                 margin="normal"
                 required={true}
