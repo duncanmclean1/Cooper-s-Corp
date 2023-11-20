@@ -7,10 +7,10 @@ export default function Login() {
       const [data, setData] = useState(DEFAULT_DATA_INFO);
       
       const handleMessage = () => {
-        if (data.alertType === "error") {
+        if (data.alertType === "success") {
           return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
         }
-        else if (data.alertType === "success") {
+        else if (data.alertType === "error") {
           return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
         }
       }
@@ -35,7 +35,10 @@ export default function Login() {
             }); 
         })
         .catch((error) => {
-            console.log(error);
+           setData({
+            alertType: "error",
+            alertMessage: error,
+           })
         });
       };
       
