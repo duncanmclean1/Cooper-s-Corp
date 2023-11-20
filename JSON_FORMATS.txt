@@ -85,3 +85,20 @@ ENDPOINT: localhost:8001/api/addemployee
         {
             "isAdded": true
         }
+
+ENDPOINT: localhost:8001/api/showemployees
+    REQUEST METHOD: 
+        GET
+    REQUEST BODY:
+
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 404
+    
+    RESPONSE BODY:
+        {
+            "EMPLOYEE_ID": 1234,
+            "FIRST_NAME": "Julian",
+            "LAST_NAME": "Herman"
+        }
