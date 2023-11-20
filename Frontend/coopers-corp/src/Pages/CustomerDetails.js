@@ -1,11 +1,13 @@
 import { Typography, Box, Container, TextField, Button } from "@material-ui/core";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function CustomerDetails() {
     const [phoneNumber, setPhoneNumber] = useState({phoneNumber: ""});
     const [address, setAddress] = useState({address: ""});
     const [zipCode, setZipCode] = useState({zipCode: ""});
-    
+    const navigate = useNavigate();
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const addCustomer = {
@@ -24,10 +26,35 @@ export default function CustomerDetails() {
         .catch((error) => {
             console.log(error)
         })
+        navigate("/additems");
     }
-
+    
+    // const handleAutoPopulate = (event) => {
+    //     event.preventDefault();
+    //     const checkForCustomer = {
+    //         "PHONE_NUMBER": phoneNumber.phoneNumber
+    //     }
+    //         fetch('api/checkforcustomer', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify(checkForCustomer),
+    //     })
+    //     .then((response) => response.json())
+    //     .then((checkForCustomer) => {
+    //         if (checkForCustomer === true)
+    //         {
+    //             setAddress({...address, [address]: checkForCustomer.ADDRESS})
+    //             setZipCode({...zipCode, [zipCode]: checkForCustomer.ZIPCODE_KEY})
+    //         }
+    //     })
+    //     .catch((error) => {
+    //         console.log(error)
+    //     });
+    // }
     const handlePhoneNumber = phoneNumber => event => {
-        setPhoneNumber({...phoneNumber, [phoneNumber]: event.target.value})
+    setPhoneNumber({...phoneNumber, [phoneNumber]: event.target.value})
     }
 
     const handleAddress = address => event => {
@@ -59,6 +86,14 @@ export default function CustomerDetails() {
                         value={phoneNumber.phoneNumber}
                         onChange={handlePhoneNumber("phoneNumber")}
                     />
+                    {/* <Button 
+                        margin="normal"
+                        variant="text"
+                        onClick={handleAutoPopulate}
+
+                    >
+                        Enter
+                    </Button> */}
                     <TextField
                         margin="normal"
                         required={true}
