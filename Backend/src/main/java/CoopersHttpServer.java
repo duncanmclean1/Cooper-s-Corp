@@ -124,10 +124,44 @@ public class CoopersHttpServer {
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
                 JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CreateOrderJson.class);
-                // System.out.println(createOrder);
+                //System.out.println(createOrder);
 
-                String sqlQuery = "INSERT INTO CUSTOMER_ORDER VALUES (ORDER_NUMBER_SEQ.nextval, employee_id, phone_number, date) VALUES (...)";
+                String sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
+                        +
+                        createOrder.EMPLOYEE_ID + ", '" + createOrder.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('" + createOrder.TIME + "'));";
+                //System.out.println(sqlQuery);
 
+                String response;
+                try {
+                    // create a new CUSTOMER_ORDER record
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(201, 0);
+
+                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
+                    sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int ORDER_NUMBER = resultSet.getInt("MAX(ORDER_NUMBER)");
+                    //System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
+
+                    // for each ORDER_DETAIL, add a new record
+                    for ( var detail : createOrder.ORDER_DETAILS ) {
+                        sqlQuery = "INSERT INTO ORDER_DETAIL (PRODUCT_ID, ORDER_NUMBER, PRICE_PAID, QUANTITY, NOTES) VALUES (" + detail.PRODUCT_ID + ", " + ORDER_NUMBER + ", " + detail.PRICE_PAID + ", " + detail.QUANTITY + ", '" + detail.NOTES + "');";
+                        //System.out.println("sqlQuery: " + sqlQuery);
+                        SnowFlakeConnector.sendQuery(sqlQuery);
+                    }
+
+                    response = "{\"orderSuccessfullySubmitted:\": \"true\"}";
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "SQL error";
+                    e.printStackTrace();
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
             }
         }
     }
