@@ -102,6 +102,19 @@ public class CoopersHttpServer {
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
+                    try {
+                        while ( resultSet.next() ) {
+                            try {
+                                System.out.println(resultSet.getRow());
+                            } catch (SQLException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
                 String sqlQuery = "INSERT INTO CUSTOMER_ORDER VALUES (ORDER_NUMBER_SEQ.nextval, employee_id, phone_number, date) VALUES (...)";
 
