@@ -92,7 +92,6 @@ public class CoopersHttpServer {
                 String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + addCustomerJson.PHONE_NUMBER
                         + "', " + addCustomerJson.ZIPCODE_KEY
                         + ", '" + addCustomerJson.ADDRESS + "');";
-                System.out.println(sqlQuery);
 
                 String response;
                 try {
