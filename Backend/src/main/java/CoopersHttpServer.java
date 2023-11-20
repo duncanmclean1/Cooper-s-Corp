@@ -79,19 +79,12 @@ public class CoopersHttpServer {
         }
     }
 
-    static class CreateOrderHandler implements HttpHandler {
+    static class AddCustomerHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            System.out.println("Create Order API Called");
-            // Handle requests for "/createorder" context
+            System.out.println("Add Customer API Called");
+            // Handle requests for "/api/addcustomer" context
             if ("POST".equals(exchange.getRequestMethod())) {
-                // parse json from frontend
-                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
-                JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
-                        JsonStructures.CreateOrderJson.class);
-                //System.out.println(createOrder);
-
-                if ( createOrder.CUSTOMER_IS_NEW ) {
                     String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + createOrder.PHONE_NUMBER
                                                                     + "', " + createOrder.ZIPCODE_KEY
                                                                     + ", '" + createOrder.ADDRESS + "');";
@@ -115,7 +108,20 @@ public class CoopersHttpServer {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                }
+    }
+
+    static class CreateOrderHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Create Order API Called");
+            // Handle requests for "/api/createorder" context
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.CreateOrderJson.class);
+                //System.out.println(createOrder);
+
                 String sqlQuery = "INSERT INTO CUSTOMER_ORDER VALUES (ORDER_NUMBER_SEQ.nextval, employee_id, phone_number, date) VALUES (...)";
 
             }
@@ -220,25 +226,26 @@ public class CoopersHttpServer {
         }
     }
 
-    public static void main(String[] args) throws SQLException {
-        // start the backend server
-        HttpServer backendServer;
-        try {
-            backendServer = HttpServer.create(new InetSocketAddress("localhost", 8001), 0);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        public static void main(String[] args) throws SQLException {
+            // start the backend server
+            HttpServer backendServer;
+            try {
+                backendServer = HttpServer.create(new InetSocketAddress("localhost", 8001), 0);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            // create contexts to handle different endpoints
+            backendServer.createContext("/api/login", new LoginHandler());
+            backendServer.createContext("/api/addcustomer", new AddCustomerHandler());
+            backendServer.createContext("/api/createorder", new CreateOrderHandler());
+            backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
+            backendServer.createContext("/api/vieworder", new ViewOrderHandler());
+            backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
+            backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
+
+            // start the backend server
+            System.out.println("Running on port: 8001\n");
+            backendServer.start();
         }
-
-        // create contexts to handle different endpoints
-        backendServer.createContext("/api/login", new LoginHandler());
-        backendServer.createContext("/api/createorder", new CreateOrderHandler());
-        backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
-        backendServer.createContext("/api/vieworder", new ViewOrderHandler());
-        backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
-        backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
-
-        // start the backend server
-        System.out.println("Running on port: 8001\n");
-        backendServer.start();
-    }
 }
