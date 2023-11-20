@@ -126,7 +126,7 @@ ENDPOINT: localhost:8001/api/showemployees
         }
 
 
-ENDPOINT: localhost:8001/api/addemployee
+ENDPOINT: localhost:8001/api/updateemployee
     REQUEST METHOD: 
         POST
     REQUEST BODY:
