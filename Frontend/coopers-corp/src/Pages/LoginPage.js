@@ -78,8 +78,8 @@ export default function Login() {
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
               <TextField
                 margin="normal"
-                required
-                fullWidth
+                required={true}
+                fullWidth={true}
                 id="employee id"
                 label="Employee-Id"
                 name="employee id"
