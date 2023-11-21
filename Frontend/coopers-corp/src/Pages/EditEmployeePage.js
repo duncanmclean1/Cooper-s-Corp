@@ -1,133 +1,55 @@
+import React, {useState, useEffect} from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
-import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
-import Box from '@mui/system/Box';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import React, {useState} from "react";
-//after adding a new employee set status to active 
-export default function EditEmployee() {
-    const [openPopup, setOpenPopup] = useState(false);
-    const [errorPopup, setErrorPopup] = useState(false);
-    const [employeeId, setEmployeeId] = useState({employeeId: ""});
-    const [firstName, setFirstName] = useState({firstName: ""});
-    const [lastName, setLastName] = useState({lastName: ""});
-    const [password, setPassword] = useState({password: ""});
+function createData(name, calories, fat, carbs, protein) {
+  return { name, calories, fat, carbs, protein };
+}
 
-    const arr = ["1111", "2222", "3333"];
-    const handleClose = () => {
-        setOpenPopup(false);
-      };
-      const handleClick = (event) => {
-        event.preventDefault();
-        if (employeeId.employeeId == "" || firstName.firstName == "" || lastName.lastName == "" || password.password == "") {
-          setErrorPopup(true);
-        }
-        else {
-          console.log({"EMPLOYEE_ID": employeeId.employeeId, "FIRST_NAME": firstName.firstName, "LAST_NAME":lastName.lastName, "PASSWORD": password.password })                                                                 
-          setOpenPopup(true);
-        }
-      }
-      const handleErrorClose = (event) => {
-        event.preventDefault();
-        setErrorPopup(false)
-      }
-      const handleSubmit = (event) => {
-        event.preventDefault();
-      }
-      const handleEmployeeId = employeeId => event => {
-        setEmployeeId({...employeeId, [employeeId]: event.target.value})
-      }
-      const handleFirstName = firstName => event => {
-        setFirstName({...firstName, [firstName]: event.target.value})
-      }      
-      const handleLastName = lastName => event => {
-        setLastName({...lastName, [lastName]: event.target.value})
-      }      
-      const handlePassword = password => event => {
-        setPassword({...password, [password]: event.target.value})
-      }
-      const error = arr.includes(employeeId.employeeId); 
-  return ( 
-      <Container maxWidth='sm'>
-      <Box component = 'form' display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} padding='20px'>
-      <TextField
-      required 
-      id = "employeeId"
-      name = "employeeId"
-      label="Employee ID"
-      value = {employeeId.employeeId}
-      onChange={handleEmployeeId("employeeId")}
-      helperText={error ? "Employee ID already exists" : ""}
-      error={error}
-      autoFocus
-     />
-      <TextField
-      required 
-      value = {firstName.firstName}
-      onChange={handleFirstName("firstName")}
-      id = "firstName"
-      name = "firstName"
-      label="First Name"
-     />
-      <TextField
-      required
-      value = {lastName.lastName} 
-      onChange={handleLastName("lastName")}
-      id = "lastName"
-      name = "lastName"
-      label="Last Name"
-     />
-      <TextField
-      required 
-      value = {password.password}
-      onChange = {handlePassword("password")}
-      id = "password"
-      name = "password"
-      label="Password"
-     />
-    <Button type = "submit" variant="outlined" onClick = {handleClick}>
-      Submit
-     </Button>
-   </Box>
-   <Dialog
-        open={openPopup}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Confirmation"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you would like to submit?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose} autoFocus href="/dashboard">
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={errorPopup}
-        onClose={handleErrorClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"!"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Please fill in all fields
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleErrorClose}>OK</Button>
-        </DialogActions>
-      </Dialog>
-   </Container>
+
+
+export default function EditEmployeePage() {
+  const [rows, setRows] = useState([]);
+    useEffect(() => { getData();
+    }, []);
+    const getData = async () => {
+      const actualData = await fetch('api/showemployees');
+      const result = await actualData.json();
+      setRows(result);
+      console.log("hi");
+      console.log(rows);
+    };
+
+  const DisplayData = rows.map((row) => {
+    return(<tr>
+      <td> {row.EMPLOYEE_ID}</td>
+      <td> {row.FIRST_NAME}</td>
+      <td> {row.LAST_NAME}</td>
+    </tr>)
+  })
+  return (
+    <div>
+    <table>
+        <thead>
+            <tr>
+            <th>ID</th>
+            <th>FIRST NAME</th>
+            <th>LAST NAME</th>
+            </tr>
+        </thead>
+        <tbody>
+         
+            
+            {DisplayData}
+            
+        </tbody>
+    </table>
+     
+</div>
   );
 }
