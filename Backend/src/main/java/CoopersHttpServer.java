@@ -91,9 +91,10 @@ public class CoopersHttpServer {
                 JsonStructures.AddCustomerJson addCustomerJson = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.AddCustomerJson.class);
 
-                String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + addCustomerJson.PHONE_NUMBER
-                        + "', " + addCustomerJson.ZIPCODE_KEY
-                        + ", '" + addCustomerJson.ADDRESS + "');";
+                String sqlQuery = "MERGE INTO Customer AS target USING (SELECT '" + addCustomerJson.PHONE_NUMBER
+                        + "' AS phone_number, '" + addCustomerJson.ADDRESS + "' AS address, '"
+                        + addCustomerJson.ZIPCODE_KEY
+                        + "' AS zipcode_key) AS source ON target.phone_number = source.phone_number WHEN MATCHED THEN UPDATE SET target.address = source.address, target.zipcode_key = source.zipcode_key WHEN NOT MATCHED THEN INSERT (phone_number, address, zipcode_key) VALUES (source.phone_number, source.address, source.zipcode_key);";
 
                 String response;
                 try {
