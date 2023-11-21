@@ -6,6 +6,7 @@ export default function CustomerDetails() {
     const [phoneNumber, setPhoneNumber] = useState({phoneNumber: ""});
     const [address, setAddress] = useState({address: ""});
     const [zipCode, setZipCode] = useState({zipCode: ""});
+
     const navigate = useNavigate();
 
     const handleSubmit = (event) => {
@@ -26,7 +27,7 @@ export default function CustomerDetails() {
         .catch((error) => {
             console.log(error)
         })
-        navigate("/additems");
+        navigate("/addItems");
     }
     
     // const handleAutoPopulate = (event) => {
