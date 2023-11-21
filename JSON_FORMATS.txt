@@ -106,7 +106,8 @@ ENDPOINT: localhost:8001/api/showemployees
         }
         
     
-    ENDPOINT: localhost:8001/api/addcustomer
+
+ENDPOINT: localhost:8001/api/addcustomer
     REQUEST METHOD: 
         POST
     REQUEST BODY:
@@ -126,6 +127,32 @@ ENDPOINT: localhost:8001/api/showemployees
         }
 
 
+
+ENDPOINT: localhost:8001/api/viewoneorder
+    REQUEST METHOD: 
+        POST
+    REQUEST BODY:
+        {
+            "ORDER_NUMBER": 11
+        }
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 422
+    
+    RESPONSE BODY:
+        {
+            "ORDER_NUMBER:": 11,
+            "EMPLOYEE_ID": 1236,
+            "FIRST_NAME": 'Julian',
+            "LAST_NAME": 'Herman',
+            "TIME": '2023-08-21 02:34:42.000',
+            "PHONE_NUMBER": '901-232-1122',
+            "ZIPCODE_KEY": 7422'
+        }
+
+    
+    
 ENDPOINT: localhost:8001/api/updateemployee
     REQUEST METHOD: 
         POST
@@ -136,11 +163,10 @@ ENDPOINT: localhost:8001/api/updateemployee
             "LAST_NAME": "Mama",
             "STATUS": false
         }
-
-    RESPONSE CODE(S):
-        SUCCESS: 200
-        FAILURE: 422
-    
+        
+    RESPONSE CODES:
+        SUCCESS:
+        FAILURE:
     Can return true/false
     RESPONSE BODY:
         {
