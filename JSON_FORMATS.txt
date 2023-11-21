@@ -150,3 +150,25 @@ ENDPOINT: localhost:8001/api/viewoneorder
             "PHONE_NUMBER": '901-232-1122',
             "ZIPCODE_KEY": 7422'
         }
+
+    
+    
+ENDPOINT: localhost:8001/api/updateemployee
+    REQUEST METHOD: 
+        POST
+    REQUEST BODY:
+        {
+            "EMPLOYEE_ID": 1234,
+            "FIRST_NAME": "Joe",
+            "LAST_NAME": "Mama",
+            "STATUS": false
+        }
+        
+    RESPONSE CODES:
+        SUCCESS:
+        FAILURE:
+    Can return true/false
+    RESPONSE BODY:
+        {
+            "isUpdated": true
+        }
