@@ -296,7 +296,7 @@ public class CoopersHttpServer {
         public void handle(HttpExchange exchange) throws IOException {
             System.out.println("Show Employees API Called");
             if ("GET".equals(exchange.getRequestMethod())) {
-                String sqlQuery = "SELECT employee_id, first_name, last_name FROM Employee";
+                String sqlQuery = "SELECT employee_id, first_name, last_name, status FROM Employee";
                 ResultSet resultSet;
 
                 // Sends query to get all employees (employee_id, first_name, last_name)
@@ -318,6 +318,7 @@ public class CoopersHttpServer {
                         employee.setEmployeeID(resultSet.getString("EMPLOYEE_ID"));
                         employee.setFirstName(resultSet.getString("FIRST_NAME"));
                         employee.setLastName(resultSet.getString("LAST_NAME"));
+                        employee.setStatus(resultSet.getString("STATUS"));
                         list.add(employee);
                     }
 
