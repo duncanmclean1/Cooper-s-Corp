@@ -50,12 +50,12 @@ public class CoopersHttpServer {
             // Handle requests for "/api/login" context
             System.out.println("Login API called");
             if ("POST".equals(exchange.getRequestMethod())) {
-                // parse json from frontend
+                // Parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
                 JsonStructures.LoginJson login = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.LoginJson.class);
 
-                // authenticate user
+                // Authenticate user
                 boolean userIsAuthenticated = false;
                 try {
                     userIsAuthenticated = authenticateUser(login.EMPLOYEE_ID, login.PASSWORD);
@@ -63,7 +63,7 @@ public class CoopersHttpServer {
                     throw new RuntimeException(e);
                 }
 
-                // send corresponding response to frontend
+                // Send corresponding response to frontend
                 String response;
                 if (userIsAuthenticated) {
                     exchange.sendResponseHeaders(200, 0); // authorized status code
@@ -75,7 +75,7 @@ public class CoopersHttpServer {
                 }
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.getBytes());
-                    System.out.println("Sent response");
+                    System.out.println("Sent response\n");
                 }
             }
         }
@@ -268,7 +268,7 @@ public class CoopersHttpServer {
 
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(jsonResponse.getBytes());
-                    System.out.println("Sent response");
+                    System.out.println("Sent response\n");
                 }
 
             }
