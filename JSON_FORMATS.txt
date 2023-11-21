@@ -165,8 +165,8 @@ ENDPOINT: localhost:8001/api/updateemployee
         }
         
     RESPONSE CODES:
-        SUCCESS:
-        FAILURE:
+        SUCCESS: 200
+        FAILURE: 422
     Can return true/false
     RESPONSE BODY:
         {
