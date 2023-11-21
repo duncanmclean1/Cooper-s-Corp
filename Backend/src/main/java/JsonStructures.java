@@ -103,4 +103,8 @@ public class JsonStructures {
     static class CheckForCustomerJson {
         String PHONE_NUMBER;
     }
+
+    static class OrderDetailJson {
+        int ORDER_NUMBER;
+    }
 }
