@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
@@ -115,11 +117,61 @@ public class CoopersHttpServer {
         }
     }
 
-    static class CreateOrderHandler implements HttpHandler {
+    static class AddCustomerOrderHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            System.out.println("Create Order API Called");
-            // Handle requests for "/api/createorder" context
+            System.out.println("Add Customer Order API Called");
+            // Handle requests for "/api/addcustomerorder" context
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // Get the current date and time as a LocalDateTime object
+                LocalDateTime now = LocalDateTime.now();
+
+                // Create a formatter with the desired pattern
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.AddCustomerOrderJson addCustomerOrder = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.AddCustomerOrderJson.class);
+
+                String sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
+                        +
+                        addCustomerOrder.EMPLOYEE_ID + ", '" + addCustomerOrder.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('"
+                        + now.format(formatter) + "'));";
+                // System.out.println(sqlQuery);
+
+                String response;
+                try {
+                    // create a new CUSTOMER_ORDER record
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+
+                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
+                    sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int ORDER_NUMBER = resultSet.getInt("MAX(ORDER_NUMBER)");
+                    // System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
+                    exchange.sendResponseHeaders(201, 0);
+                    response = "{\n\t\"ORDER_NUMBER\": " + ORDER_NUMBER + "\n}";
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "{\n\tSQL error\n}";
+                    e.printStackTrace();
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
+            }
+        }
+    }
+
+    static class AddOrderDetailHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Add Order Detail API Called");
+            // Handle requests for "/api/addorderdetail" context
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
@@ -133,39 +185,15 @@ public class CoopersHttpServer {
                         + createOrder.TIME + "'));";
                 // System.out.println(sqlQuery);
 
-                String response;
-                try {
-                    // create a new CUSTOMER_ORDER record
+                  
+
+                // for each ORDER_DETAIL, add a new record
+                for (var detail : createOrder.ORDER_DETAILS) {
+                    sqlQuery = "INSERT INTO ORDER_DETAIL (PRODUCT_ID, ORDER_NUMBER, PRICE_PAID, QUANTITY, NOTES) VALUES ("
+                            + detail.PRODUCT_ID + ", " + ORDER_NUMBER + ", " + detail.PRICE_PAID + ", "
+                            + detail.QUANTITY + ", '" + detail.NOTES + "');";
+                    // System.out.println("sqlQuery: " + sqlQuery);
                     SnowFlakeConnector.sendQuery(sqlQuery);
-                    exchange.sendResponseHeaders(201, 0);
-
-                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER
-                    // record
-                    sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
-                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-                    resultSet.next();
-                    int ORDER_NUMBER = resultSet.getInt("MAX(ORDER_NUMBER)");
-                    // System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
-
-                    // for each ORDER_DETAIL, add a new record
-                    for (var detail : createOrder.ORDER_DETAILS) {
-                        sqlQuery = "INSERT INTO ORDER_DETAIL (PRODUCT_ID, ORDER_NUMBER, PRICE_PAID, QUANTITY, NOTES) VALUES ("
-                                + detail.PRODUCT_ID + ", " + ORDER_NUMBER + ", " + detail.PRICE_PAID + ", "
-                                + detail.QUANTITY + ", '" + detail.NOTES + "');";
-                        // System.out.println("sqlQuery: " + sqlQuery);
-                        SnowFlakeConnector.sendQuery(sqlQuery);
-                    }
-
-                    response = "{\"orderSuccessfullySubmitted:\": \"true\"}";
-                } catch (SQLException e) {
-                    exchange.sendResponseHeaders(422, 0);
-                    response = "SQL error";
-                    e.printStackTrace();
-                }
-
-                try (OutputStream os = exchange.getResponseBody()) {
-                    os.write(response.getBytes());
-                    System.out.println("Sent response\n");
                 }
             }
         }
@@ -507,7 +535,10 @@ public class CoopersHttpServer {
         // create contexts to handle different endpoints
         backendServer.createContext("/api/login", new LoginHandler());
         backendServer.createContext("/api/addcustomer", new AddCustomerHandler());
-        backendServer.createContext("/api/createorder", new CreateOrderHandler());
+        backendServer.createContext("/api/addcustomerorder", new AddCustomerOrderHandler());
+        //backendServer.createContext("/api/cancelorder", new CancelOrderHandler());
+        //backendServer.createContext("/api/addorderdetail", new AddOrderDetailHandler());
+        //backendServer.createContext("/api/removeorderdetail", new RemoveOrderDetailHandler());
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
         backendServer.createContext("/api/viewoneorder", new ViewOneOrderHandler());
         backendServer.createContext("/api/viewordersbyzipcode", new ViewOrdersByZipcodeHandler());
