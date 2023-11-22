@@ -136,6 +136,12 @@ public class JsonStructures {
         String TIME_END;
     }
 
+    static class OrdersByEmployeeJson {
+        int EMPLOYEE_ID;
+        String TIME_BEGIN;
+        String TIME_END;
+    }
+
     static class OrderDetail {
         int ORDER_NUMBER;
         int EMPLOYEE_ID;

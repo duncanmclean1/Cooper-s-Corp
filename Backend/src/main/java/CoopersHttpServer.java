@@ -235,29 +235,15 @@ public class CoopersHttpServer {
                 StringBuilder response = new StringBuilder();
                 // send queries to snowflake
                 try {
-                    // query CUSTOMER_ORDER table
-                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER WHERE ORDER_NUMBER = " + orderDetail.ORDER_NUMBER
-                            + ";";
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nWHERE O.ORDER_NUMBER = " + orderDetail.ORDER_NUMBER + ";";
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
                     int EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
                     String PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
                     String TIME = resultSet.getString("TIME");
-
-                    // query EMPLOYEE table
-                    sqlQuery = "SELECT FIRST_NAME, LAST_NAME FROM EMPLOYEE WHERE EMPLOYEE_ID = " + EMPLOYEE_ID + ";";
-                    // System.out.println("sqlQuery: " + sqlQuery);
-                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-                    resultSet.next();
                     String FIRST_NAME = resultSet.getString("FIRST_NAME");
                     String LAST_NAME = resultSet.getString("LAST_NAME");
-
-                    // query CUSTOMER table
-                    sqlQuery = "SELECT ZIPCODE_KEY FROM CUSTOMER WHERE PHONE_NUMBER = '" + PHONE_NUMBER + "';";
-                    // System.out.println("sqlQuery: " + sqlQuery);
-                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-                    resultSet.next();
                     int ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
 
                     // send results
@@ -299,8 +285,8 @@ public class CoopersHttpServer {
                 // send queries to snowflake
                 try {
                     // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
-                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O JOIN CUSTOMER C \n\tON O.PHONE_NUMBER = C.PHONE_NUMBER AND O.TIME BETWEEN TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_END + "') AND C.ZIPCODE_KEY = " + ordersByZipcode.ZIPCODE_KEY + " \nJOIN EMPLOYEE E \n\tON O.EMPLOYEE_ID = E.EMPLOYEE_ID;";
-                    //System.out.println("sqlQuery: " + sqlQuery);
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN CUSTOMER C \n\tON O.PHONE_NUMBER = C.PHONE_NUMBER\nJOIN EMPLOYEE E\n\tON O.EMPLOYEE_ID = E.EMPLOYEE_ID\nWHERE O.TIME BETWEEN TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_END + "') AND C.ZIPCODE_KEY = " + ordersByZipcode.ZIPCODE_KEY + ";";
+                    // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
         
                     while ( resultSet.next() ) {
@@ -339,8 +325,47 @@ public class CoopersHttpServer {
             // Handle requests for "/api/viewordersbyemployee" context
             System.out.println("View Orders By Employee API Called");
             // order_number, employeee first_name last_name (id), time, customer phone number, customer zipcode
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.OrdersByEmployeeJson ordersByEmployee = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.OrdersByEmployeeJson.class);
 
-            // ...
+                ArrayList<JsonStructures.OrderDetail> listOfOrders = new ArrayList<>();
+                // send queries to snowflake
+                try {
+                    // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nWHERE O.EMPLOYEE_ID = " + ordersByEmployee.EMPLOYEE_ID + " AND O.TIME BETWEEN TO_TIMESTAMP_NTZ('" + ordersByEmployee.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByEmployee.TIME_END + "');";
+                    // System.out.println("sqlQuery: " + sqlQuery);
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+        
+                    while ( resultSet.next() ) {
+                        JsonStructures.OrderDetail order = new JsonStructures.OrderDetail();
+                        order.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
+                        order.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
+                        order.FIRST_NAME = resultSet.getString("FIRST_NAME");
+                        order.LAST_NAME = resultSet.getString("LAST_NAME");
+                        order.TIME = resultSet.getString("TIME");
+                        order.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
+                        order.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
+                        listOfOrders.add(order);
+                    }
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    exchange.sendResponseHeaders(422, 0);
+                }
+
+                // Converts ArrayList to JSON format
+                Gson gson = new Gson();
+                String response = gson.toJson(listOfOrders);
+                //System.out.println("Converting to JSON");
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.toString().getBytes());
+                }
+                System.out.println("Sent response");
+            }
         }
     }
 
