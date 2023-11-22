@@ -12,6 +12,8 @@ public class JsonStructures {
         int QUANTITY;
         String NOTES;
 
+        public OrderDetailEntryJson(){}
+
         @Override
         public String toString() {
             return "\n{\n\tORDER_NUMBER: " + ORDER_NUMBER + "\n\tPRODUCT_ID: " + PRODUCT_ID + "\n\tPRICE_PAID: "
