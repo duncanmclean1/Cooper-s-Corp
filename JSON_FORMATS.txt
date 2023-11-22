@@ -73,27 +73,6 @@ ENDPOINT: localhost:8001/api/showemployees
             "FIRST_NAME": "Julian",
             "LAST_NAME": "Herman"
         }
-        
-    
-
-ENDPOINT: localhost:8001/api/addcustomer
-    REQUEST METHOD: 
-        POST
-    REQUEST BODY:
-        {
-            "PHONE_NUMBER": "123-456-7890",
-            "ADDRESS": "123 Main St",
-            "ZIPCODE_KEY": 12345
-        }
-
-    RESPONSE CODE(S):
-        SUCCESS: 201
-        FAILURE: 422
-    
-    RESPONSE BODY:
-        {
-            "isAdded": true
-        }
 
 
 
@@ -214,18 +193,21 @@ ENDPOINT: localhost:8001/api/updateemployee
 
 
 
-ENDPOINT: localhost:8001/api/addcustomerorder
+ENDPOINT: localhost:8001/api/addcustomerandorder
     REQUEST METHOD: 
         POST
     REQUEST BODY:
         {
             "EMPLOYEE_ID": 1111,
-            "PHONE_NUMBER": "123-456-7890"
+            "PHONE_NUMBER": "123-456-7890",
+            "ADDRESS": "123 Main St",
+            "ZIPCODE_KEY": 12345
         }
-        
-    RESPONSE CODES:
+
+    RESPONSE CODE(S):
         SUCCESS: 201
         FAILURE: 422
+    
     RESPONSE BODY:
         {
             "ORDER_NUMBER": 2
