@@ -1,32 +1,30 @@
-import { Box, Button, Container, Menu, Typography, TextField, TableHead, TableCell, Table, TableContainer, TableRow, TableBody } from "@material-ui/core";
+import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField } from "@material-ui/core";
 import { useState } from "react";
-
-export default function AddItems() {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
-    
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    function createMenu(productId, name, notes, price) {
-        return {productId, name, notes, price}
+export default function AddItems() {    
+    const createMenu = (productId, productName, notes, price) => {
+        return {productId, productName, notes, price}
     }
 
     const rows = [
         createMenu(1, "Soda", "2 Liter bottle", 3.25),
         createMenu(2, "Breadsticks", "8 per pack", 2.50),
         createMenu(3, "Pizza-small Pepperoni", "8 inch", 7.35),
-        createMenu(2, "Pizza-medium Pepperoni", "12 inch", 9.35),
-        createMenu(2, "Pizza-large Pepperoni", "18 inch", 14.00),
-        createMenu(2, "Pizza-small House special", "8 inch", 8.50),
-        createMenu(2, "Pizza-medium House special", "12 inch", 10.50),
-        createMenu(2, "Pizza-large House special", "18 inch", 16.00),
+        createMenu(4, "Pizza-medium Pepperoni", "12 inch", 9.35),
+        createMenu(5, "Pizza-large Pepperoni", "18 inch", 14.00),
+        createMenu(6, "Pizza-small House special", "8 inch", 8.50),
+        createMenu(7, "Pizza-medium House special", "12 inch", 10.50),
+        createMenu(8, "Pizza-large House special", "18 inch", 16.00),
     ]
+
+    const [list, setList] = useState(rows);
+    const [name, setName] = useState('');
+    const handleChange = (event) => {
+        setName(event.target.value);
+    }
+
+    const handleAdd = () => {
+
+    }
     return (
         <Container component="main" maxWidth="sm">
           <Box
@@ -38,26 +36,7 @@ export default function AddItems() {
             }}
           >
             <Typography variant="h4">Would like to add some items?</Typography>
-            <Button
-                id="fade-button"
-                aria-controls={open ? 'fade-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                fullWidth={true}
-                onClick={handleClick}
-            >
-                Add Items
-            </Button>
-            <Menu
-                id="fade-menu"
-                MenuListProps={{
-                'aria-labelledby': 'fade-button',
-                }}
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-            >
-            <TableContainer>
+            <TableContainer component={Paper}>
                 <Table sx={{minWidth: 650}} aria-label="Menu">
                     <TableHead>
                         <TableRow>
@@ -67,9 +46,9 @@ export default function AddItems() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {rows.map((item) => (
+                        {list.map((item) => (
                             <TableRow key={item.productId}>
-                            <TableCell>{item.name}</TableCell>
+                            <TableCell>{item.productName}</TableCell>
                             <TableCell>{item.notes}</TableCell>
                             <TableCell>{item.price}</TableCell>
                         </TableRow>
@@ -77,16 +56,15 @@ export default function AddItems() {
                     </TableBody>
                 </Table>
             </TableContainer>
-          </Menu>
-          <TextField
-                margin="normal"
-                required={true}
-                name="Quantity"
-                label="Quantity"
-                variant="outlined"
-                defaultValue={"1"}
-                />
-          </Box>
+            <TextField onChange={handleChange}></TextField>
+            <Button
+                id="fade-button"
+                fullWidth={true}
+                onClick={handleAdd}
+            >
+                Add Items
+            </Button>          
+            </Box>
         </Container>
     )
 }
