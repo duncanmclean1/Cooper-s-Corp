@@ -7,9 +7,12 @@ public class JsonStructures {
         String PASSWORD;
     }
 
-    static class CreateOrderJson {
+    static class AddCustomerOrderJson {
         int EMPLOYEE_ID;
         String PHONE_NUMBER;
+    }
+
+    static class CreateOrderJson {
         String TIME;
         ArrayList<OrderDetail> ORDER_DETAILS;
 
@@ -129,4 +132,64 @@ public class JsonStructures {
     static class OrderDetailJson {
         int ORDER_NUMBER;
     }
+
+    static class OrdersByZipcodeJson {
+        int ZIPCODE_KEY;
+        String TIME_BEGIN;
+        String TIME_END;
+    }
+
+    static class OrdersByEmployeeJson {
+        int EMPLOYEE_ID;
+        String TIME_BEGIN;
+        String TIME_END;
+    }
+
+    static class OrderDetail {
+        int ORDER_NUMBER;
+        int EMPLOYEE_ID;
+        String FIRST_NAME;
+        String LAST_NAME;
+        String TIME;
+        String PHONE_NUMBER;
+        int ZIPCODE_KEY;
+
+        public OrderDetail(){}
+
+        public OrderDetail (int ORDER_NUMBER, int EMPLOYEE_ID, String FIRST_NAME, String LAST_NAME, String TIME, String PHONE_NUMBER, int ZIPCODE_KEY) {
+            this.ORDER_NUMBER = ORDER_NUMBER;
+            this.EMPLOYEE_ID = EMPLOYEE_ID;
+            this.FIRST_NAME = FIRST_NAME;
+            this.LAST_NAME = LAST_NAME;
+            this.TIME = TIME;
+            this.PHONE_NUMBER = PHONE_NUMBER;
+            this.ZIPCODE_KEY = ZIPCODE_KEY;
+        }
+    }
+
+
+    static class MenuDetails{
+        float PRICE;
+        String PRODUCT_NAME;
+        String SIZE_NAME;
+
+        public MenuDetails(){}
+        
+        public MenuDetails(float price, String product, String size){
+            this.PRICE = price;
+            this.PRODUCT_NAME = product;
+            this.SIZE_NAME = size;
+        }
+
+        
+
+
+
+
+    }
+
+
+
+
+
 }
