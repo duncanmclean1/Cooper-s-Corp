@@ -1,11 +1,22 @@
 import { Typography, Box, Container, TextField, Button } from "@material-ui/core";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Alert } from "@mui/material";
 
 export default function CustomerDetails() {
     const [phoneNumber, setPhoneNumber] = useState({phoneNumber: ""});
     const [address, setAddress] = useState({address: ""});
     const [zipCode, setZipCode] = useState({zipCode: ""});
+    const [data, setData] = useState(DEFAULT_DATA_INFO);
+
+    const handleMessage = () => {
+        if (data.alertType === "success") {
+          return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
+        }
+        else if (data.alertType === "error") {
+          return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
+        }
+      }
 
     const navigate = useNavigate();
 
@@ -24,36 +35,30 @@ export default function CustomerDetails() {
             body: JSON.stringify(addCustomer),
         })
         .then((response) => response.json())
-        .catch((error) => {
-            console.log(error)
+        .then((addCustomer) => {
+            if (addCustomer.isAdded != true)
+            {
+                setData({
+                  alertType: "success",
+                  alertMessage: "Successfully logged in.",
+                });
+                navigate("/addItems");
+              }
+              else {
+                setData({
+                  alertType: "error",
+                  alertMessage: "Enter correct employee id or password",
+                 });
+              }
         })
-        navigate("/addItems");
+        .catch((error) => {
+            setData({
+                alertType: "error",
+                alertMessage: error,
+               })
+        })
     }
     
-    // const handleAutoPopulate = (event) => {
-    //     event.preventDefault();
-    //     const checkForCustomer = {
-    //         "PHONE_NUMBER": phoneNumber.phoneNumber
-    //     }
-    //         fetch('api/checkforcustomer', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify(checkForCustomer),
-    //     })
-    //     .then((response) => response.json())
-    //     .then((checkForCustomer) => {
-    //         if (checkForCustomer === true)
-    //         {
-    //             setAddress({...address, [address]: checkForCustomer.ADDRESS})
-    //             setZipCode({...zipCode, [zipCode]: checkForCustomer.ZIPCODE_KEY})
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         console.log(error)
-    //     });
-    // }
     const handlePhoneNumber = phoneNumber => event => {
     setPhoneNumber({...phoneNumber, [phoneNumber]: event.target.value})
     }
@@ -87,14 +92,6 @@ export default function CustomerDetails() {
                         value={phoneNumber.phoneNumber}
                         onChange={handlePhoneNumber("phoneNumber")}
                     />
-                    {/* <Button 
-                        margin="normal"
-                        variant="text"
-                        onClick={handleAutoPopulate}
-
-                    >
-                        Enter
-                    </Button> */}
                     <TextField
                         margin="normal"
                         required={true}
@@ -127,3 +124,9 @@ export default function CustomerDetails() {
         </Container>
     )
 }
+
+
+const DEFAULT_DATA_INFO = {
+    alertType: "",
+    alertMessage: "",
+  }
