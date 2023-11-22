@@ -90,8 +90,8 @@ export default function Login() {
               />
               <TextField
                 margin="normal"
-                required
-                fullWidth
+                required={true}
+                fullWidth={true}
                 name="password"
                 label="Password"
                 type="password"
