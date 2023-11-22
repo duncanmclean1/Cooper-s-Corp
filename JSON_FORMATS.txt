@@ -235,3 +235,21 @@ ENDPOINT: localhost:8001/api/updateemployee
         {
             "isUpdated": true
         }
+
+
+ENDPOINT: localhost:8001/api/showmenu
+    REQUEST METHOD: 
+        GET
+    REQUEST BODY:
+
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 404
+    
+    RESPONSE BODY:
+        {
+            "PRICE": 12.34,
+            "PRODUCT_NAME": "Pizza",
+            "SIZE_NAME": "Large"
+        }

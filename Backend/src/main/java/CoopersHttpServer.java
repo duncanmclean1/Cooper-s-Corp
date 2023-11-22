@@ -232,7 +232,8 @@ public class CoopersHttpServer {
                 StringBuilder response = new StringBuilder();
                 // send queries to snowflake
                 try {
-                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nWHERE O.ORDER_NUMBER = " + orderDetail.ORDER_NUMBER + ";";
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nWHERE O.ORDER_NUMBER = "
+                            + orderDetail.ORDER_NUMBER + ";";
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
@@ -271,7 +272,8 @@ public class CoopersHttpServer {
         public void handle(HttpExchange exchange) throws IOException {
             // Handle requests for "/api/viewordersbyzipcode" context
             System.out.println("View Orders By Zipcode API Called");
-            // order_number, employeee first_name last_name (id), time, customer phone number, customer zipcode
+            // order_number, employeee first_name last_name (id), time, customer phone
+            // number, customer zipcode
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
@@ -282,11 +284,13 @@ public class CoopersHttpServer {
                 // send queries to snowflake
                 try {
                     // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
-                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN CUSTOMER C \n\tON O.PHONE_NUMBER = C.PHONE_NUMBER\nJOIN EMPLOYEE E\n\tON O.EMPLOYEE_ID = E.EMPLOYEE_ID\nWHERE O.TIME BETWEEN TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_END + "') AND C.ZIPCODE_KEY = " + ordersByZipcode.ZIPCODE_KEY + ";";
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN CUSTOMER C \n\tON O.PHONE_NUMBER = C.PHONE_NUMBER\nJOIN EMPLOYEE E\n\tON O.EMPLOYEE_ID = E.EMPLOYEE_ID\nWHERE O.TIME BETWEEN TO_TIMESTAMP_NTZ('"
+                            + ordersByZipcode.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_END
+                            + "') AND C.ZIPCODE_KEY = " + ordersByZipcode.ZIPCODE_KEY + ";";
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-        
-                    while ( resultSet.next() ) {
+
+                    while (resultSet.next()) {
                         JsonStructures.OrderDetail order = new JsonStructures.OrderDetail();
                         order.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
                         order.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
@@ -306,7 +310,7 @@ public class CoopersHttpServer {
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
                 String response = gson.toJson(listOfOrders);
-                //System.out.println("Converting to JSON");
+                // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.toString().getBytes());
@@ -321,7 +325,8 @@ public class CoopersHttpServer {
         public void handle(HttpExchange exchange) throws IOException {
             // Handle requests for "/api/viewordersbyemployee" context
             System.out.println("View Orders By Employee API Called");
-            // order_number, employeee first_name last_name (id), time, customer phone number, customer zipcode
+            // order_number, employeee first_name last_name (id), time, customer phone
+            // number, customer zipcode
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
@@ -332,11 +337,14 @@ public class CoopersHttpServer {
                 // send queries to snowflake
                 try {
                     // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
-                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nWHERE O.EMPLOYEE_ID = " + ordersByEmployee.EMPLOYEE_ID + " AND O.TIME BETWEEN TO_TIMESTAMP_NTZ('" + ordersByEmployee.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByEmployee.TIME_END + "');";
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nWHERE O.EMPLOYEE_ID = "
+                            + ordersByEmployee.EMPLOYEE_ID + " AND O.TIME BETWEEN TO_TIMESTAMP_NTZ('"
+                            + ordersByEmployee.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByEmployee.TIME_END
+                            + "');";
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-        
-                    while ( resultSet.next() ) {
+
+                    while (resultSet.next()) {
                         JsonStructures.OrderDetail order = new JsonStructures.OrderDetail();
                         order.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
                         order.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
@@ -356,7 +364,7 @@ public class CoopersHttpServer {
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
                 String response = gson.toJson(listOfOrders);
-                //System.out.println("Converting to JSON");
+                // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.toString().getBytes());
@@ -495,6 +503,56 @@ public class CoopersHttpServer {
         }
     }
 
+    static class ShowMenuHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Show Menu API Called");
+            if ("GET".equals(exchange.getRequestMethod())) {
+
+                String sqlQuery = "SELECT price, product_name, size_name FROM PRODUCT P\n" + //
+                        "JOIN SIZE S\n" + //
+                        "ON P.SIZE_ID = S.SIZE_ID";
+                ResultSet resultSet;
+
+                // Sends query to get all employees (employee_id, first_name, last_name)
+                try {
+                    System.out.println("Query Sent");
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(404, 0);
+                    throw new RuntimeException(e);
+                }
+
+                ArrayList<JsonStructures.MenuDetails> list = new ArrayList<>();
+
+                try {
+                    // Creates employee objects and adds them to an ArrayList
+                    while (resultSet.next()) {
+                        JsonStructures.MenuDetails menu = new JsonStructures.MenuDetails(resultSet.getFloat("PRICE"),
+                                resultSet.getString("PRODUCT_NAME"), resultSet.getString("SIZE_NAME"));
+                        list.add(menu);
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                // Converts ArrayList to JSON format
+                Gson gson = new Gson();
+                String jsonResponse = gson.toJson(list);
+                System.out.println("Converting to JSON");
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(jsonResponse.getBytes());
+                    System.out.println("Sent response\n");
+                }
+
+            }
+
+        }
+    }
+
     public static void main(String[] args) throws SQLException {
         // start the backend server
         HttpServer backendServer;
@@ -515,6 +573,7 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
         backendServer.createContext("/api/showemployees", new ShowEmployeesHandler());
         backendServer.createContext("/api/updateemployee", new UpdateEmployeeHandler());
+        backendServer.createContext("/api/showmenu", new ShowMenuHandler());
 
         // start the backend server
         System.out.println("Running on port: 8001\n");

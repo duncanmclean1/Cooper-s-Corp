@@ -163,4 +163,30 @@ public class JsonStructures {
             this.ZIPCODE_KEY = ZIPCODE_KEY;
         }
     }
+
+
+    static class MenuDetails{
+        float PRICE;
+        String PRODUCT_NAME;
+        String SIZE_NAME;
+
+        public MenuDetails(){}
+        
+        public MenuDetails(float price, String product, String size){
+            this.PRICE = price;
+            this.PRODUCT_NAME = product;
+            this.SIZE_NAME = size;
+        }
+
+        
+
+
+
+
+    }
+
+
+
+
+
 }
