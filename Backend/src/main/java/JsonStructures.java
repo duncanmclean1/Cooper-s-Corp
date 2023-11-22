@@ -7,9 +7,12 @@ public class JsonStructures {
         String PASSWORD;
     }
 
-    static class CreateOrderJson {
+    static class AddCustomerOrderJson {
         int EMPLOYEE_ID;
         String PHONE_NUMBER;
+    }
+
+    static class CreateOrderJson {
         String TIME;
         ArrayList<OrderDetail> ORDER_DETAILS;
 
