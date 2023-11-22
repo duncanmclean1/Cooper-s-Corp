@@ -1,6 +1,9 @@
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+
+import JsonStructures.Orders;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -250,7 +253,7 @@ public class CoopersHttpServer {
                     String FIRST_NAME = resultSet.getString("FIRST_NAME");
                     String LAST_NAME = resultSet.getString("LAST_NAME");
 
-                    // query
+                    // query CUSTOMER table
                     sqlQuery = "SELECT ZIPCODE_KEY FROM CUSTOMER WHERE PHONE_NUMBER = '" + PHONE_NUMBER + "';";
                     // System.out.println("sqlQuery: " + sqlQuery);
                     resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
@@ -280,13 +283,62 @@ public class CoopersHttpServer {
         }
     }
 
-    static class ViewMultipleOrdersHandler implements HttpHandler {
+    static class ViewOrdersByZipcodeHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            // Handle requests for "/api/viewmultipleorders" context
-            System.out.println("View Multiple Orders API Called");
-            // order_number, employeee first_name last_name (id), time, customer phone
-            // number, customer zipcode
+            // Handle requests for "/api/viewordersbyzipcode" context
+            System.out.println("View Orders By Zipcode API Called");
+            // order_number, employeee first_name last_name (id), time, customer phone number, customer zipcode
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.OrdersByZipcodeJson ordersByZipcode = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.OrdersByZipcodeJson.class);
+
+                ArrayList<JsonStructures.OrderDetail> listOfOrders = new ArrayList<>();
+                // send queries to snowflake
+                try {
+                    // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O JOIN CUSTOMER C \n\tON O.PHONE_NUMBER = C.PHONE_NUMBER AND O.TIME BETWEEN TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_BEGIN + "')" + " AND TO_TIMESTAMP_NTZ('" + ordersByZipcode.TIME_END + "') AND C.ZIPCODE_KEY = " + ordersByZipcode.ZIPCODE_KEY + " \nJOIN EMPLOYEE E \n\tON O.EMPLOYEE_ID = E.EMPLOYEE_ID;";
+                    //System.out.println("sqlQuery: " + sqlQuery);
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+        
+                    while ( resultSet.next() ) {
+                        JsonStructures.OrderDetail order = new JsonStructures.OrderDetail();
+                        order.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
+                        order.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
+                        order.FIRST_NAME = resultSet.getString("FIRST_NAME");
+                        order.LAST_NAME = resultSet.getString("LAST_NAME");
+                        order.TIME = resultSet.getString("TIME");
+                        order.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
+                        order.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
+                        listOfOrders.add(order);
+                    }
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    exchange.sendResponseHeaders(422, 0);
+                }
+
+                // Converts ArrayList to JSON format
+                Gson gson = new Gson();
+                String response = gson.toJson(listOfOrders);
+                //System.out.println("Converting to JSON");
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.toString().getBytes());
+                }
+                System.out.println("Sent response");
+            }
+        }
+    }
+
+    static class ViewOrdersByEmployeeHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            // Handle requests for "/api/viewordersbyemployee" context
+            System.out.println("View Orders By Employee API Called");
+            // order_number, employeee first_name last_name (id), time, customer phone number, customer zipcode
 
             // ...
         }
@@ -436,7 +488,8 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/createorder", new CreateOrderHandler());
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
         backendServer.createContext("/api/viewoneorder", new ViewOneOrderHandler());
-        backendServer.createContext("/api/viewmultipleorders", new ViewMultipleOrdersHandler());
+        backendServer.createContext("/api/viewordersbyzipcode", new ViewOrdersByZipcodeHandler());
+        backendServer.createContext("/api/viewordersbyemployee", new ViewOrdersByEmployeeHandler());
         backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
         backendServer.createContext("/api/showemployees", new ShowEmployeesHandler());
         backendServer.createContext("/api/updateemployee", new UpdateEmployeeHandler());
