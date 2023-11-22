@@ -29,6 +29,7 @@ public class CoopersHttpServer {
         }
     }
 
+    // Helper method to authenticate the user
     public static boolean authenticateUser(int employee_ID, String password) throws SQLException {
         // send corresponding query to snowflake
         String sqlQuery = "SELECT * FROM EMPLOYEE WHERE EMPLOYEE_ID = " + employee_ID + " AND PASSWORD = '" + password
@@ -83,26 +84,47 @@ public class CoopersHttpServer {
         }
     }
 
-    static class AddCustomerHandler implements HttpHandler {
+    static class AddCustomerAndOrderHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            System.out.println("Add Customer API Called");
-            // Handle requests for "/api/addcustomer" context
+            System.out.println("Add Customer And Order API Called");
+            // Handle requests for "/api/addcustomerandorder" context
             if ("POST".equals(exchange.getRequestMethod())) {
-                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
-                JsonStructures.AddCustomerJson addCustomerJson = new Gson().fromJson(requestBodyJsonString,
-                        JsonStructures.AddCustomerJson.class);
+                // Get the current date and time as a LocalDateTime object
+                LocalDateTime now = LocalDateTime.now();
 
-                String sqlQuery = "MERGE INTO Customer AS target USING (SELECT '" + addCustomerJson.PHONE_NUMBER
-                        + "' AS phone_number, '" + addCustomerJson.ADDRESS + "' AS address, '"
-                        + addCustomerJson.ZIPCODE_KEY
-                        + "' AS zipcode_key) AS source ON target.phone_number = source.phone_number WHEN MATCHED THEN UPDATE SET target.address = source.address, target.zipcode_key = source.zipcode_key WHEN NOT MATCHED THEN INSERT (phone_number, address, zipcode_key) VALUES (source.phone_number, source.address, source.zipcode_key);";
+                // Create a formatter with the desired pattern
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                // parse JSON from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.AddCustomerAndOrderJson addCustomerAndOrderJson = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.AddCustomerAndOrderJson.class);
 
                 String response;
                 try {
+                    // update CUSTOMER table
+                    String sqlQuery = "MERGE INTO Customer AS target USING (SELECT '" + addCustomerAndOrderJson.PHONE_NUMBER
+                        + "' AS phone_number, '" + addCustomerAndOrderJson.ADDRESS + "' AS address, '"
+                        + addCustomerAndOrderJson.ZIPCODE_KEY
+                        + "' AS zipcode_key) AS source ON target.phone_number = source.phone_number WHEN MATCHED THEN UPDATE SET target.address = source.address, target.zipcode_key = source.zipcode_key WHEN NOT MATCHED THEN INSERT (phone_number, address, zipcode_key) VALUES (source.phone_number, source.address, source.zipcode_key);";
                     SnowFlakeConnector.sendQuery(sqlQuery);
+
+                    // update CUSTOMER_ORDER table (add new record)
+                    sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
+                        +
+                        addCustomerAndOrderJson.EMPLOYEE_ID + ", '" + addCustomerAndOrderJson.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('"
+                        + now.format(formatter) + "'));";
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+
+                     // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
+                    sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int ORDER_NUMBER = resultSet.getInt("MAX(ORDER_NUMBER)");
+                    // System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
                     exchange.sendResponseHeaders(201, 0);
-                    response = "{\"isAdded:\": \"true\"}";
+                    response = "{\n\t\"ORDER_NUMBER\": " + ORDER_NUMBER + "\n}";
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
                     response = "SQL error";
@@ -117,42 +139,27 @@ public class CoopersHttpServer {
         }
     }
 
-    static class AddCustomerOrderHandler implements HttpHandler {
+    static class CancelOrderHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            System.out.println("Add Customer Order API Called");
-            // Handle requests for "/api/addcustomerorder" context
+            System.out.println("Cancel Order API Called");
+            // Handle requests for "/api/cancelorder" context
             if ("POST".equals(exchange.getRequestMethod())) {
-                // Get the current date and time as a LocalDateTime object
-                LocalDateTime now = LocalDateTime.now();
-
-                // Create a formatter with the desired pattern
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
-                JsonStructures.AddCustomerOrderJson addCustomerOrder = new Gson().fromJson(requestBodyJsonString,
-                        JsonStructures.AddCustomerOrderJson.class);
-
-                String sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
-                        +
-                        addCustomerOrder.EMPLOYEE_ID + ", '" + addCustomerOrder.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('"
-                        + now.format(formatter) + "'));";
-                // System.out.println(sqlQuery);
+                JsonStructures.OrderDetailJson orderDetail = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.OrderDetailJson.class);
 
                 String response;
                 try {
-                    // create a new CUSTOMER_ORDER record
+                    String sqlQuery = "DELETE FROM CUSTOMER_ORDER WHERE ORDER_NUMBER = " + orderDetail.ORDER_NUMBER + ";";
+                    // System.out.println(sqlQuery);
                     SnowFlakeConnector.sendQuery(sqlQuery);
-
-                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
-                    sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
-                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-                    resultSet.next();
-                    int ORDER_NUMBER = resultSet.getInt("MAX(ORDER_NUMBER)");
-                    // System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
-                    exchange.sendResponseHeaders(201, 0);
-                    response = "{\n\t\"ORDER_NUMBER\": " + ORDER_NUMBER + "\n}";
+                    sqlQuery = "DELETE FROM ORDER_DETAIL WHERE ORDER_NUMBER = " + orderDetail.ORDER_NUMBER + ";";
+                    // System.out.println(sqlQuery);
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                    response = "{\n\t\"DELETION_SUCCESSFUL\": true\n}";
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
                     response = "{\n\tSQL error\n}";
@@ -166,7 +173,7 @@ public class CoopersHttpServer {
             }
         }
     }
-
+    
     static class AddOrderDetailHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -175,17 +182,16 @@ public class CoopersHttpServer {
             if ("POST".equals(exchange.getRequestMethod())) {
                 // parse json from frontend
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
-                JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
-                        JsonStructures.CreateOrderJson.class);
-                // System.out.println(createOrder);
+                JsonStructures.OrderDetailEntryJson orderDetailEntryJson = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.OrderDetailEntryJson.class);
 
-                String sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
+                String sqlQuery = "INSERT INTO ORDER_DETAIL (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
                         +
                         createOrder.EMPLOYEE_ID + ", '" + createOrder.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('"
                         + createOrder.TIME + "'));";
                 // System.out.println(sqlQuery);
 
-                  
+                ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailRecords;
 
                 // for each ORDER_DETAIL, add a new record
                 for (var detail : createOrder.ORDER_DETAILS) {
@@ -309,6 +315,8 @@ public class CoopersHttpServer {
                         JsonStructures.OrdersByZipcodeJson.class);
 
                 ArrayList<JsonStructures.OrderDetail> listOfOrders = new ArrayList<>();
+                int count = 0;
+
                 // send queries to snowflake
                 try {
                     // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
@@ -328,6 +336,7 @@ public class CoopersHttpServer {
                         order.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
                         order.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
                         listOfOrders.add(order);
+                        count++;
                     }
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
@@ -337,7 +346,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                String response = gson.toJson(listOfOrders);
+                String response = "{\n\t\"COUNT\": " + count + ",\n\t\"ORDER_DETAILS_LIST\":\n\t\t" + gson.toJson(listOfOrders) + "\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -362,6 +371,7 @@ public class CoopersHttpServer {
                         JsonStructures.OrdersByEmployeeJson.class);
 
                 ArrayList<JsonStructures.OrderDetail> listOfOrders = new ArrayList<>();
+                int count = 0;
                 // send queries to snowflake
                 try {
                     // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
@@ -382,6 +392,7 @@ public class CoopersHttpServer {
                         order.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
                         order.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
                         listOfOrders.add(order);
+                        count++;
                     }
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
@@ -391,7 +402,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                String response = gson.toJson(listOfOrders);
+                String response = "{\n\t\"COUNT\": " + count + ",\n\t\"ORDER_DETAILS_LIST\":\n\t\t" + gson.toJson(listOfOrders) +"\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -592,9 +603,8 @@ public class CoopersHttpServer {
 
         // create contexts to handle different endpoints
         backendServer.createContext("/api/login", new LoginHandler());
-        backendServer.createContext("/api/addcustomer", new AddCustomerHandler());
-        backendServer.createContext("/api/addcustomerorder", new AddCustomerOrderHandler());
-        //backendServer.createContext("/api/cancelorder", new CancelOrderHandler());
+        backendServer.createContext("/api/addcustomerandorder", new AddCustomerAndOrderHandler());
+        backendServer.createContext("/api/cancelorder", new CancelOrderHandler());
         //backendServer.createContext("/api/addorderdetail", new AddOrderDetailHandler());
         //backendServer.createContext("/api/removeorderdetail", new RemoveOrderDetailHandler());
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
