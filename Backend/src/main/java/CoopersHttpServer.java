@@ -167,6 +167,41 @@ public class CoopersHttpServer {
         }
     }
 
+    static class CancelOrderHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Cancel Order API Called");
+            // Handle requests for "/api/cancelorder" context
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.OrderDetailJson orderDetail = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.OrderDetailJson.class);
+
+                String response;
+                try {
+                    String sqlQuery = "DELETE FROM CUSTOMER_ORDER WHERE ORDER_NUMBER = " + orderDetail.ORDER_NUMBER + ";";
+                    // System.out.println(sqlQuery);
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    sqlQuery = "DELETE FROM ORDER_DETAIL WHERE ORDER_NUMBER = " + orderDetail.ORDER_NUMBER + ";";
+                    // System.out.println(sqlQuery);
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    exchange.sendResponseHeaders(200, 0);
+                    response = "{\n\t\"DELETION_SUCCESSFUL\": true\n}";
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "{\n\tSQL error\n}";
+                    e.printStackTrace();
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
+            }
+        }
+    }
+    
     static class AddOrderDetailHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -309,6 +344,8 @@ public class CoopersHttpServer {
                         JsonStructures.OrdersByZipcodeJson.class);
 
                 ArrayList<JsonStructures.OrderDetail> listOfOrders = new ArrayList<>();
+                int count = 0;
+
                 // send queries to snowflake
                 try {
                     // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
@@ -328,6 +365,7 @@ public class CoopersHttpServer {
                         order.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
                         order.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
                         listOfOrders.add(order);
+                        count++;
                     }
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
@@ -337,7 +375,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                String response = gson.toJson(listOfOrders);
+                String response = "{\n\t\"COUNT\": " + count + ",\n\t\"ORDER_DETAILS_LIST\":\n\t\t" + gson.toJson(listOfOrders) + "\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -362,6 +400,7 @@ public class CoopersHttpServer {
                         JsonStructures.OrdersByEmployeeJson.class);
 
                 ArrayList<JsonStructures.OrderDetail> listOfOrders = new ArrayList<>();
+                int count = 0;
                 // send queries to snowflake
                 try {
                     // query and join CUSTOMER_ORDER, CUSTOMER, EMPLOYEE tables
@@ -382,6 +421,7 @@ public class CoopersHttpServer {
                         order.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
                         order.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
                         listOfOrders.add(order);
+                        count++;
                     }
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
@@ -391,7 +431,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                String response = gson.toJson(listOfOrders);
+                String response = "{\n\t\"COUNT\": " + count + ",\n\t\"ORDER_DETAILS_LIST\":\n\t\t" + gson.toJson(listOfOrders) +"\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -594,7 +634,7 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/login", new LoginHandler());
         backendServer.createContext("/api/addcustomer", new AddCustomerHandler());
         backendServer.createContext("/api/addcustomerorder", new AddCustomerOrderHandler());
-        //backendServer.createContext("/api/cancelorder", new CancelOrderHandler());
+        backendServer.createContext("/api/cancelorder", new CancelOrderHandler());
         //backendServer.createContext("/api/addorderdetail", new AddOrderDetailHandler());
         //backendServer.createContext("/api/removeorderdetail", new RemoveOrderDetailHandler());
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
