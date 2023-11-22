@@ -73,13 +73,15 @@ public class JsonStructures {
         String EMPLOYEE_ID;
         String FIRST_NAME;
         String LAST_NAME;
+        String STATUS;
 
         public employeeDetails(){}
 
-        public employeeDetails(String id, String first, String last){
+        public employeeDetails(String id, String first, String last, String status){
             this.EMPLOYEE_ID = id;
             this.FIRST_NAME = first;
             this.LAST_NAME = last;
+            this.STATUS = status;
         }
 
         public String getEmployeeID(){
@@ -94,6 +96,10 @@ public class JsonStructures {
             return this.LAST_NAME;
         }
 
+        public String getStatus(){
+            return this.STATUS;
+        }
+
         public void setEmployeeID(String id){
             this.EMPLOYEE_ID = id;
         }
@@ -106,13 +112,21 @@ public class JsonStructures {
             this.LAST_NAME = last;
         }
 
+        public void setStatus(String status){
+            this.STATUS = status;
+        }
+
         @Override
         public String toString(){
-            return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nFIRST_NAME: " + FIRST_NAME + "\nLAST_NAME: " + LAST_NAME;
+            return "EMPLOYEE_ID: " + EMPLOYEE_ID + "\nFIRST_NAME: " + FIRST_NAME + "\nLAST_NAME: " + LAST_NAME + "\nSTATUS: " + STATUS;
         }
     }
 
     static class CheckForCustomerJson {
         String PHONE_NUMBER;
+    }
+
+    static class OrderDetailJson {
+        int ORDER_NUMBER;
     }
 }

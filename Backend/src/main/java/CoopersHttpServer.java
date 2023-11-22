@@ -91,9 +91,10 @@ public class CoopersHttpServer {
                 JsonStructures.AddCustomerJson addCustomerJson = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.AddCustomerJson.class);
 
-                String sqlQuery = "INSERT INTO CUSTOMER VALUES ('" + addCustomerJson.PHONE_NUMBER
-                        + "', " + addCustomerJson.ZIPCODE_KEY
-                        + ", '" + addCustomerJson.ADDRESS + "');";
+                String sqlQuery = "MERGE INTO Customer AS target USING (SELECT '" + addCustomerJson.PHONE_NUMBER
+                        + "' AS phone_number, '" + addCustomerJson.ADDRESS + "' AS address, '"
+                        + addCustomerJson.ZIPCODE_KEY
+                        + "' AS zipcode_key) AS source ON target.phone_number = source.phone_number WHEN MATCHED THEN UPDATE SET target.address = source.address, target.zipcode_key = source.zipcode_key WHEN NOT MATCHED THEN INSERT (phone_number, address, zipcode_key) VALUES (source.phone_number, source.address, source.zipcode_key);";
 
                 String response;
                 try {
@@ -124,12 +125,13 @@ public class CoopersHttpServer {
                 String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
                 JsonStructures.CreateOrderJson createOrder = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.CreateOrderJson.class);
-                //System.out.println(createOrder);
+                // System.out.println(createOrder);
 
                 String sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
                         +
-                        createOrder.EMPLOYEE_ID + ", '" + createOrder.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('" + createOrder.TIME + "'));";
-                //System.out.println(sqlQuery);
+                        createOrder.EMPLOYEE_ID + ", '" + createOrder.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('"
+                        + createOrder.TIME + "'));";
+                // System.out.println(sqlQuery);
 
                 String response;
                 try {
@@ -137,17 +139,20 @@ public class CoopersHttpServer {
                     SnowFlakeConnector.sendQuery(sqlQuery);
                     exchange.sendResponseHeaders(201, 0);
 
-                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
+                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER
+                    // record
                     sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
                     int ORDER_NUMBER = resultSet.getInt("MAX(ORDER_NUMBER)");
-                    //System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
+                    // System.out.println("ORDER_NUMBER: " + ORDER_NUMBER);
 
                     // for each ORDER_DETAIL, add a new record
-                    for ( var detail : createOrder.ORDER_DETAILS ) {
-                        sqlQuery = "INSERT INTO ORDER_DETAIL (PRODUCT_ID, ORDER_NUMBER, PRICE_PAID, QUANTITY, NOTES) VALUES (" + detail.PRODUCT_ID + ", " + ORDER_NUMBER + ", " + detail.PRICE_PAID + ", " + detail.QUANTITY + ", '" + detail.NOTES + "');";
-                        //System.out.println("sqlQuery: " + sqlQuery);
+                    for (var detail : createOrder.ORDER_DETAILS) {
+                        sqlQuery = "INSERT INTO ORDER_DETAIL (PRODUCT_ID, ORDER_NUMBER, PRICE_PAID, QUANTITY, NOTES) VALUES ("
+                                + detail.PRODUCT_ID + ", " + ORDER_NUMBER + ", " + detail.PRICE_PAID + ", "
+                                + detail.QUANTITY + ", '" + detail.NOTES + "');";
+                        // System.out.println("sqlQuery: " + sqlQuery);
                         SnowFlakeConnector.sendQuery(sqlQuery);
                     }
 
@@ -211,18 +216,78 @@ public class CoopersHttpServer {
         }
     }
 
-    static class ViewOrderHandler implements HttpHandler {
+    static class ViewOneOrderHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            // Handle requests for "/vieworder" context
-            // ...
+            // Handle requests for "/api/viewoneorder" context
+            System.out.println("View One Order API Called");
+            // order_number, employee_id, employeee first_name last_name, time, customer
+            // phone number, customer zipcode
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.OrderDetailJson orderDetail = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.OrderDetailJson.class);
+
+                StringBuilder response = new StringBuilder();
+                // send queries to snowflake
+                try {
+                    // query CUSTOMER_ORDER table
+                    String sqlQuery = "SELECT * FROM CUSTOMER_ORDER WHERE ORDER_NUMBER = " + orderDetail.ORDER_NUMBER
+                            + ";";
+                    // System.out.println("sqlQuery: " + sqlQuery);
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
+                    String PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
+                    String TIME = resultSet.getString("TIME");
+
+                    // query EMPLOYEE table
+                    sqlQuery = "SELECT FIRST_NAME, LAST_NAME FROM EMPLOYEE WHERE EMPLOYEE_ID = " + EMPLOYEE_ID + ";";
+                    // System.out.println("sqlQuery: " + sqlQuery);
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    String FIRST_NAME = resultSet.getString("FIRST_NAME");
+                    String LAST_NAME = resultSet.getString("LAST_NAME");
+
+                    // query
+                    sqlQuery = "SELECT ZIPCODE_KEY FROM CUSTOMER WHERE PHONE_NUMBER = '" + PHONE_NUMBER + "';";
+                    // System.out.println("sqlQuery: " + sqlQuery);
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
+
+                    // send results
+                    response.append("{\n\t\"ORDER_NUMBER:\": " + orderDetail.ORDER_NUMBER + ",");
+                    response.append("\n\t\"EMPLOYEE_ID\": " + EMPLOYEE_ID + ",");
+                    response.append("\n\t\"FIRST_NAME\": \'" + FIRST_NAME + "',");
+                    response.append("\n\t\"LAST_NAME\": \'" + LAST_NAME + "',");
+                    response.append("\n\t\"TIME\": \'" + TIME + "',");
+                    response.append("\n\t\"PHONE_NUMBER\": \'" + PHONE_NUMBER + "',");
+                    response.append("\n\t\"ZIPCODE_KEY\": " + ZIPCODE_KEY + "\n}");
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    response.append("{\n\tSQL ERROR\n}");
+                    exchange.sendResponseHeaders(404, 0);
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.toString().getBytes());
+                }
+                System.out.println("Sent response");
+            }
         }
     }
 
-    static class EditEmployeesHandler implements HttpHandler {
+    static class ViewMultipleOrdersHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            // Handle requests for "/editemployees" context
+            // Handle requests for "/api/viewmultipleorders" context
+            System.out.println("View Multiple Orders API Called");
+            // order_number, employeee first_name last_name (id), time, customer phone
+            // number, customer zipcode
+
             // ...
         }
     }
@@ -232,7 +297,7 @@ public class CoopersHttpServer {
         public void handle(HttpExchange exchange) throws IOException {
             System.out.println("Show Employees API Called");
             if ("GET".equals(exchange.getRequestMethod())) {
-                String sqlQuery = "SELECT employee_id, first_name, last_name FROM Employee";
+                String sqlQuery = "SELECT employee_id, first_name, last_name, status FROM Employee";
                 ResultSet resultSet;
 
                 // Sends query to get all employees (employee_id, first_name, last_name)
@@ -254,6 +319,7 @@ public class CoopersHttpServer {
                         employee.setEmployeeID(resultSet.getString("EMPLOYEE_ID"));
                         employee.setFirstName(resultSet.getString("FIRST_NAME"));
                         employee.setLastName(resultSet.getString("LAST_NAME"));
+                        employee.setStatus(resultSet.getString("STATUS"));
                         list.add(employee);
                     }
 
@@ -369,8 +435,8 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/addcustomer", new AddCustomerHandler());
         backendServer.createContext("/api/createorder", new CreateOrderHandler());
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
-        backendServer.createContext("/api/vieworder", new ViewOrderHandler());
-        backendServer.createContext("/api/editemployees", new EditEmployeesHandler());
+        backendServer.createContext("/api/viewoneorder", new ViewOneOrderHandler());
+        backendServer.createContext("/api/viewmultipleorders", new ViewMultipleOrdersHandler());
         backendServer.createContext("/api/addemployee", new AddEmployeeHandler());
         backendServer.createContext("/api/showemployees", new ShowEmployeesHandler());
         backendServer.createContext("/api/updateemployee", new UpdateEmployeeHandler());
