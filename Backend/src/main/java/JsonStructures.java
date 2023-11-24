@@ -117,6 +117,11 @@ public class JsonStructures {
         int ORDER_NUMBER;
     }
 
+    static class OrderDetailKeyJson {
+        int ORDER_DETAIL_KEY;
+        int ORDER_NUMBER;
+    }
+
     static class OrdersByZipcodeJson {
         int ZIPCODE_KEY;
         String TIME_BEGIN;

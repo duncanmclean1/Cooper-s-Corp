@@ -117,7 +117,7 @@ public class CoopersHttpServer {
                         + now.format(formatter) + "'));";
                     SnowFlakeConnector.sendQuery(sqlQuery);
 
-                     // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
+                    // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
                     sqlQuery = "SELECT MAX(ORDER_NUMBER) FROM CUSTOMER_ORDER;";
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
@@ -192,12 +192,21 @@ public class CoopersHttpServer {
 
                 ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailEntries = new ArrayList<>();
 
+                int ORDER_DETAIL_KEY = -1;
                 String response;
                 try {
                     SnowFlakeConnector.sendQuery(sqlQuery);
+
+                    // grab the ORDER_DETAIL_KEY associated with the above created new ORDER_DETAIL record
+                    sqlQuery = "SELECT MAX(ORDER_DETAIL_KEY) FROM ORDER_DETAIL;";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    ORDER_DETAIL_KEY = resultSet.getInt("MAX(ORDER_DETAIL_KEY)");
+
+                    // grab current cart
                     sqlQuery = "SELECT * FROM ORDER_DETAIL WHERE ORDER_NUMBER = " + orderDetailEntryJson.ORDER_NUMBER + ";";
                     // System.out.println(sqlQuery);
-                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     while ( resultSet.next() ) {
                         JsonStructures.OrderDetailEntryJson detail = new JsonStructures.OrderDetailEntryJson();
                         detail.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
@@ -216,7 +225,58 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                response = gson.toJson(listOfOrderDetailEntries);
+                response = "{\n\t\"ORDER_DETAIL_KEY\": " + ORDER_DETAIL_KEY + ",\n\t\"CART\": \n" + gson.toJson(listOfOrderDetailEntries) + "\n}";
+                // System.out.println("Converting to JSON");
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                    System.out.println("Sent response\n");
+                }
+            }
+        }
+    }
+
+    static class RemoveOrderDetailHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Remove Order Detail API Called");
+            // Handle requests for "/api/removeorderdetail" context
+            if ("POST".equals(exchange.getRequestMethod())) {
+                // parse json from frontend
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.OrderDetailKeyJson orderDetailKeyJson = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.OrderDetailKeyJson.class);
+
+                ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailEntries = new ArrayList<>();
+
+                String response;
+                try {
+                    String sqlQuery = "DELETE FROM ORDER_DETAIL WHERE ORDER_DETAIL_KEY = " + orderDetailKeyJson.ORDER_DETAIL_KEY + ";";
+                    SnowFlakeConnector.sendQuery(sqlQuery);
+                    //System.out.println(sqlQuery);
+
+                    sqlQuery = "SELECT * FROM ORDER_DETAIL WHERE ORDER_NUMBER = " + orderDetailKeyJson.ORDER_NUMBER + ";";
+                    // System.out.println(sqlQuery);
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    while ( resultSet.next() ) {
+                        JsonStructures.OrderDetailEntryJson detail = new JsonStructures.OrderDetailEntryJson();
+                        detail.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
+                        detail.PRODUCT_ID = resultSet.getInt("PRODUCT_ID");
+                        detail.PRICE_PAID = resultSet.getDouble("PRICE_PAID");
+                        detail.QUANTITY = resultSet.getInt("QUANTITY");
+                        detail.NOTES = resultSet.getString("NOTES");
+                        listOfOrderDetailEntries.add(detail);
+                    }
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    exchange.sendResponseHeaders(422, 0);
+                    response = "{\n\tSQL error\n}";
+                    e.printStackTrace();
+                }
+
+                // Converts ArrayList to JSON format
+                Gson gson = new Gson();
+                response = "{\n\t\"CART\": \n" + gson.toJson(listOfOrderDetailEntries) + "\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -628,7 +688,7 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/addcustomerandorder", new AddCustomerAndOrderHandler());
         backendServer.createContext("/api/cancelorder", new CancelOrderHandler());
         backendServer.createContext("/api/addorderdetail", new AddOrderDetailHandler());
-        //backendServer.createContext("/api/removeorderdetail", new RemoveOrderDetailHandler());
+        backendServer.createContext("/api/removeorderdetail", new RemoveOrderDetailHandler());
         backendServer.createContext("/api/checkforcustomer", new CheckForCustomerHandler());
         backendServer.createContext("/api/viewoneorder", new ViewOneOrderHandler());
         backendServer.createContext("/api/viewordersbyzipcode", new ViewOrdersByZipcodeHandler());
