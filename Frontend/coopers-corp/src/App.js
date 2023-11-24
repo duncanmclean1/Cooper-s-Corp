@@ -11,10 +11,10 @@ export default function App()
     <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard/:employeeId" element={<DashboardPage />} />
         <Route path= "/addEmployee" element={<AddEmployeePage />} />
         <Route path= "/editEmployee" element={<EditEmployeePage />}/>
-        <Route path="/customerDetails" element={<CustomerDetails />} />
+        <Route path="/customerDetails/:employeeId" element={<CustomerDetails />} />
         <Route path="/addItems" element={<AddItems />} />
       </Routes>
     </Router>

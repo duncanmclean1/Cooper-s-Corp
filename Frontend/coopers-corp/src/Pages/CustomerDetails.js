@@ -1,24 +1,13 @@
 import { Typography, Box, Container, TextField, Button } from "@material-ui/core";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Alert } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function CustomerDetails() {
     const [phoneNumber, setPhoneNumber] = useState({phoneNumber: ""});
     const [address, setAddress] = useState({address: ""});
     const [zipCode, setZipCode] = useState({zipCode: ""});
-    const [data, setData] = useState(DEFAULT_DATA_INFO);
-
-    const handleMessage = () => {
-        if (data.alertType === "success") {
-          return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
-        }
-        else if (data.alertType === "error") {
-          return <Alert severity = {data.alertType}>{data.alertMessage}</Alert>;
-        }
-      }
-
     const navigate = useNavigate();
+    const {employeeId} = useParams();
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -27,7 +16,7 @@ export default function CustomerDetails() {
             "ADDRESS": address.address,
             "ZIPCODE_KEY": Number(zipCode.zipCode)
         };
-        fetch('/api/addcustomer', {
+        fetch('/api/addcustomerandorder', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -35,28 +24,13 @@ export default function CustomerDetails() {
             body: JSON.stringify(addCustomer),
         })
         .then((response) => response.json())
-        .then((addCustomer) => {
-            if (addCustomer.isAdded != true)
-            {
-                setData({
-                  alertType: "success",
-                  alertMessage: "Successfully logged in.",
-                });
-                navigate("/addItems");
-              }
-              else {
-                setData({
-                  alertType: "error",
-                  alertMessage: "Enter correct employee id or password",
-                 });
-              }
+        .then((response) => {
+            console.log(response);
         })
         .catch((error) => {
-            setData({
-                alertType: "error",
-                alertMessage: error,
-               })
+            console.log(error);
         })
+      navigate("/additems");
     }
     
     const handlePhoneNumber = phoneNumber => event => {
@@ -82,6 +56,15 @@ export default function CustomerDetails() {
                         alignItems: "center",
                     }}
                 >
+                    <TextField
+                        margin="normal"
+                        fullWidth={true}
+                        name="Employee Id"
+                        label="Employee Id"
+                        variant="outlined"
+                        value={employeeId}
+                        disabled={true}
+                    />
                     <TextField 
                         margin="normal"
                         required={true}
@@ -124,9 +107,3 @@ export default function CustomerDetails() {
         </Container>
     )
 }
-
-
-const DEFAULT_DATA_INFO = {
-    alertType: "",
-    alertMessage: "",
-  }
