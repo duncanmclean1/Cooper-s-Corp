@@ -47,13 +47,13 @@ ENDPOINT: localhost:8001/api/addemployee
         }
 
     RESPONSE CODE(S):
-        SUCCESS: 200
+        SUCCESS: 201
         FAILURE: 422
     
     Can return true/false
     RESPONSE BODY:
         {
-            "isAdded": true
+            "EMPLOYEE_ID": 1234
         }
 
 

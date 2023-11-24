@@ -561,12 +561,19 @@ public class CoopersHttpServer {
                         + addEmployee.PASSWORD + "', EMPLOYEE_ID_SEQ.nextval);";
 
                 String response;
-
                 try {
-                    System.out.println("Sent Query");
+                    //System.out.println("Sent Query");
                     SnowFlakeConnector.sendQuery(sqlQuery);
-                    exchange.sendResponseHeaders(200, 0);
-                    response = "{\"isAdded:\": \"true\"}";
+
+                    // grab the EMPLOYEE_ID associated with the above created new EMPLOYEE record
+                    sqlQuery = "SELECT MAX(EMPLOYEE_ID) FROM EMPLOYEE;";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int EMPLOYEE_ID = resultSet.getInt("MAX(EMPLOYEE_ID)");
+
+                    // send response
+                    exchange.sendResponseHeaders(201, 0);
+                    response = "{\n\t\"EMPLOYEE_ID:\": " + EMPLOYEE_ID + "\n}";
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
                     response = "SQL error";
