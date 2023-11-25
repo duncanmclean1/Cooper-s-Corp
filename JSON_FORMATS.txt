@@ -47,13 +47,13 @@ ENDPOINT: localhost:8001/api/addemployee
         }
 
     RESPONSE CODE(S):
-        SUCCESS: 200
+        SUCCESS: 201
         FAILURE: 422
     
     Can return true/false
     RESPONSE BODY:
         {
-            "isAdded": true
+            "EMPLOYEE_ID": 1234
         }
 
 
@@ -249,47 +249,51 @@ ENDPOINT: localhost:8001/api/addorderdetail
         SUCCESS: 201
         FAILURE: 422
     RESPONSE BODY:
-        [
-            {
-                "PRODUCT_ID": 3,
-                "PRICE_PAID": 22.60,
-                "QUANTITY": 2,
-                "NOTES": "light on the pepperoni please"
-            },
-            {
-                "PRODUCT_ID": 5,
-                "PRICE_PAID": 12.59,
-                "QUANTITY": 1,
-                "NOTES": ""
-            }
-        ]
+        {
+            "ORDER_DETAIL_KEY: 2,
+            "CART":
+                [
+                    {
+                        "PRODUCT_ID": 3,
+                        "PRICE_PAID": 22.60,
+                        "QUANTITY": 2,
+                        "NOTES": "light on the pepperoni please"
+                    },
+                    {
+                        "PRODUCT_ID": 5,
+                        "PRICE_PAID": 12.59,
+                        "QUANTITY": 1,
+                        "NOTES": ""
+                    }
+                ]
+        }
 
 
-// Remove only one orderdetail entry that matches
+
 ENDPOINT: localhost:8001/api/removeorderdetail
     REQUEST METHOD: 
         POST
     REQUEST BODY:
         {
             "ORDER_NUMBER": 2,
-            "PRODUCT_ID": 3,
-            "PRICE_PAID": 22.60,
-            "QUANTITY": 2,
-            "NOTES": "light on the pepperoni please"
+            "ORDER_DETAIL_KEY": 2
         }
         
     RESPONSE CODES:
-        SUCCESS: 201
+        SUCCESS: 200
         FAILURE: 422
     RESPONSE BODY:
-        [
-            {
-                "PRODUCT_ID": 5,
-                "PRICE_PAID": 12.59,
-                "QUANTITY": 1,
-                "NOTES": ""
-            }
-        ]
+        {
+            "CART":
+                [
+                    {
+                        "PRODUCT_ID": 5,
+                        "PRICE_PAID": 12.59,
+                        "QUANTITY": 1,
+                        "NOTES": ""
+                    }
+                ]
+        }
 
 
 
