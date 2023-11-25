@@ -1,13 +1,11 @@
-import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField, Grid } from "@material-ui/core";
+import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField, Grid, FormControl, NativeSelect } from "@material-ui/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 export default function AddItems() {    
     const [menu, setMenu] = useState();
-    const [productId, setProductId] = useState({productId:""});
-    const [pricePaid, setPricePaid] = useState({pricePaid:""});
     const [quantity, setQuantity] = useState({quantity:""});
-    const [notes, setNotes] = useState({notes: ""});
-
+    const [notes, setNotes] = useState({notes:""});
+    const {orderNumber} = useParams();
         useEffect(() => {
             fetch('/api/showmenu', {
                 method: 'GET',
@@ -21,6 +19,32 @@ export default function AddItems() {
                 setMenu(response);
             })
         }, []) 
+
+        const handleSubmit = (event) => {
+            event.preventDefault();
+            const addOrderDetail = {
+                "QUANTITY": Number(quantity.quantity),
+                "NOTES": notes.notes
+            };
+            fetch('/api/addorderdetail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(addOrderDetail),
+            })
+            .then((response) => response.json())
+            .catch((error) => {
+                console.log(error);
+            })
+        }
+        const handleQuantity = quantity => event => {
+            setQuantity({...quantity, [quantity]: event.target.value})
+        }
+
+        const handleNotes = notes => event => {
+            setNotes({...notes, [notes]: event.target.value})
+        }
 
         return (
         <Container component="main" maxWidth="sm">
@@ -44,15 +68,10 @@ export default function AddItems() {
                     </TableHead>
                     <TableBody>
                         {menu?.map((item) => (
-                            <TableRow key={item.productId}>
+                            <TableRow key={item.PRODUCT_NAME}>
                             <TableCell>{item.PRODUCT_NAME}</TableCell>
                             <TableCell>{item.SIZE_NAME}</TableCell>
                             <TableCell>{item.PRICE}</TableCell>
-                            {/* <Button
-                                id="fade-button"
-                            >
-                                Add Item
-                            </Button>  */}
                         </TableRow>
                         ))}
                     </TableBody>
@@ -69,29 +88,49 @@ export default function AddItems() {
             <Grid item xs={4}>
                 <Typography variant="h4">Add Item</Typography>
             </Grid>
+            <Box sx={{ minWidth: 120 }}>
+      <FormControl fullWidth>
+        <NativeSelect
+          inputProps={{
+            name: 'age',
+            id: 'uncontrolled-native',
+          }}
+        >
+        {menu?.map((item) => (
+            <option key={item.productId}>{item.PRODUCT_NAME}</option>
+        ))}
+        </NativeSelect>
+      </FormControl>
+    </Box>
             <Grid container rowSpacing={2}>
                 <Grid item xs={6}>
-                <TextField 
-                    margin="normal"
-                    required={true}
-                    name="Quantity"
-                    label="Quantity"
-                    value={quantity.quantity}
-                    variant="outlined"
-                />
+                <TextField
+                margin="normal"
+                required={true}
+                id="Quantity"
+                label="Quantity"
+                name="Quantity"
+                autoComplete="Quantity"
+                variant="outlined"
+                value={quantity.quantity}
+                onChange={handleQuantity("quantity")}
+              />
                 </Grid>
                 <TextField 
                     margin="normal"
                     required={true}
-                    name="Notes"
+                    id="Notes"
                     label="Notes"
-                    value={notes.notes}
+                    name="Notes"
+                    autoComplete="Notes"
                     variant="outlined"
+                    value={notes.notes}
+                    onChange={handleNotes("notes")}
                 />
             </Grid>
-                <Button fullWidth={true}>Add Item</Button>
+                <Button fullWidth={true} onClick={handleSubmit}>Add Item</Button>
                 <TableBody>
-                    <Typography>Added Items will be displayed here</Typography>
+                    <Typography>Items in Cart</Typography>
                     <Button>Delete item</Button>
                 </TableBody>
             </Box>

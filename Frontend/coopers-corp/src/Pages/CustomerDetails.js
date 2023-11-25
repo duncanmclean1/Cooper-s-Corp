@@ -6,9 +6,8 @@ export default function CustomerDetails() {
     const [phoneNumber, setPhoneNumber] = useState({phoneNumber: ""});
     const [address, setAddress] = useState({address: ""});
     const [zipCode, setZipCode] = useState({zipCode: ""});
-    const navigate = useNavigate();
     const {employeeId} = useParams();
-
+    const navigate = useNavigate();
     const handleSubmit = (event) => {
         event.preventDefault();
         const addCustomer = {
@@ -25,14 +24,13 @@ export default function CustomerDetails() {
         })
         .then((response) => response.json())
         .then((response) => {
-            console.log(response);
+            navigate(`/additems/${response.ORDER_NUMBER}`)
         })
         .catch((error) => {
             console.log(error);
         })
-      navigate("/additems");
     }
-    
+
     const handlePhoneNumber = phoneNumber => event => {
     setPhoneNumber({...phoneNumber, [phoneNumber]: event.target.value})
     }
@@ -99,7 +97,7 @@ export default function CustomerDetails() {
                         type="submit"
                         fullWidth={true}
                         variant="contained"
-                        onClick={handleSubmit}                        
+                        onClick={handleSubmit}  
                     >
                         Add Customer
                     </Button>

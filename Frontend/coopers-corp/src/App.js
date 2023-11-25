@@ -15,7 +15,7 @@ export default function App()
         <Route path= "/addEmployee" element={<AddEmployeePage />} />
         <Route path= "/editEmployee" element={<EditEmployeePage />}/>
         <Route path="/customerDetails/:employeeId" element={<CustomerDetails />} />
-        <Route path="/addItems" element={<AddItems />} />
+        <Route path="/additems/:orderNumber" element={<AddItems />} />
       </Routes>
     </Router>
   );
