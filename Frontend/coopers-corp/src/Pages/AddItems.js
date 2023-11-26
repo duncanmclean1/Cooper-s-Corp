@@ -1,10 +1,12 @@
 import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField, Grid, FormControl, NativeSelect } from "@material-ui/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
 export default function AddItems() {    
     const [menu, setMenu] = useState();
     const [quantity, setQuantity] = useState({quantity:""});
     const [notes, setNotes] = useState({notes:""});
+    const [cartItems, setCartItems] = useState();
     const {orderNumber} = useParams();
         useEffect(() => {
             fetch('/api/showmenu', {
@@ -23,6 +25,8 @@ export default function AddItems() {
         const handleSubmit = (event) => {
             event.preventDefault();
             const addOrderDetail = {
+                "ORDER_NUMBER": orderNumber,
+                "PRICE_PAID": orderNumber*quantity.quantity,
                 "QUANTITY": Number(quantity.quantity),
                 "NOTES": notes.notes
             };
@@ -34,6 +38,9 @@ export default function AddItems() {
                 body: JSON.stringify(addOrderDetail),
             })
             .then((response) => response.json())
+            .then((response) => {
+                setCartItems(response.CART)
+            })
             .catch((error) => {
                 console.log(error);
             })
@@ -56,7 +63,7 @@ export default function AddItems() {
               alignItems: "center",
             }}
           >
-            <Typography variant="h4">Menu</Typography>
+            <Typography variant="h6">Menu</Typography>
             <TableContainer component={Paper}>
                 <Table sx={{minWidth: 650}} aria-label="Menu">
                     <TableHead>
@@ -67,8 +74,8 @@ export default function AddItems() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {menu?.map((item) => (
-                            <TableRow key={item.PRODUCT_NAME}>
+                        {menu?.map((item, index) => (
+                            <TableRow key={index}>
                             <TableCell>{item.PRODUCT_NAME}</TableCell>
                             <TableCell>{item.SIZE_NAME}</TableCell>
                             <TableCell>{item.PRICE}</TableCell>
@@ -86,18 +93,18 @@ export default function AddItems() {
                   }}
             > 
             <Grid item xs={4}>
-                <Typography variant="h4">Add Item</Typography>
+                <Typography variant="h6">Add Item</Typography>
             </Grid>
             <Box sx={{ minWidth: 120 }}>
       <FormControl fullWidth>
         <NativeSelect
           inputProps={{
-            name: 'age',
+            name: 'item',
             id: 'uncontrolled-native',
           }}
         >
-        {menu?.map((item) => (
-            <option key={item.productId}>{item.PRODUCT_NAME}</option>
+        {menu?.map((item, index) => (
+            <option key={index}>{item.PRODUCT_NAME}</option>
         ))}
         </NativeSelect>
       </FormControl>
@@ -129,12 +136,23 @@ export default function AddItems() {
                 />
             </Grid>
                 <Button fullWidth={true} onClick={handleSubmit}>Add Item</Button>
-                <TableBody>
-                    <Typography>Items in Cart</Typography>
-                    <Button>Delete item</Button>
-                </TableBody>
+    <Box sx={{ flexGrow: 1 }}>
+        <Typography variant="h6">Cart</Typography>
+      <Grid container spacing={3}>
+        {cartItems?.map((things, index) => (
+            <>
+                <Grid item xs>
+                    <Typography>{things.QUANTITY}</Typography>
+                </Grid><Grid item xs={6}>
+                    <Typography>{things.PRICE_PAID}</Typography>
+                </Grid><Grid item xs>
+                    <Typography>{things.NOTES}</Typography>
+                </Grid>
+            </>
+        ))}
+      </Grid>
+    </Box>
             </Box>
-            <Button fullWidth={true}>Create Order</Button>
             </Box>
         </Container>
     )
