@@ -47,13 +47,13 @@ ENDPOINT: localhost:8001/api/addemployee
         }
 
     RESPONSE CODE(S):
-        SUCCESS: 200
+        SUCCESS: 201
         FAILURE: 422
     
     Can return true/false
     RESPONSE BODY:
         {
-            "isAdded": true
+            "EMPLOYEE_ID": 1234
         }
 
 
@@ -239,8 +239,8 @@ ENDPOINT: localhost:8001/api/addorderdetail
     REQUEST BODY:
         {
             "ORDER_NUMBER": 2,
-            "PRODUCT_ID": 3,
-            "PRICE_PAID": 22.60,
+            "PRODUCT_NAME": "Pizza-small Pepperoni",
+            "PRICE_PAID": 7.35,
             "QUANTITY": 2,
             "NOTES": "light on the pepperoni please"
         }
@@ -254,13 +254,15 @@ ENDPOINT: localhost:8001/api/addorderdetail
             "CART":
                 [
                     {
-                        "PRODUCT_ID": 3,
-                        "PRICE_PAID": 22.60,
+                        "ORDER_NUMBER": 2,
+                        "PRODUCT_NAME": "Pizza-small Pepperoni",
+                        "PRICE_PAID": 7.35,
                         "QUANTITY": 2,
                         "NOTES": "light on the pepperoni please"
                     },
                     {
-                        "PRODUCT_ID": 5,
+                        "ORDER_NUMBER": 2,
+                        "PRODUCT_NAME": "Pizza-large Pepperoni",
                         "PRICE_PAID": 12.59,
                         "QUANTITY": 1,
                         "NOTES": ""
@@ -287,7 +289,8 @@ ENDPOINT: localhost:8001/api/removeorderdetail
             "CART":
                 [
                     {
-                        "PRODUCT_ID": 5,
+                        "ORDER_NUMBER": 2,
+                        "PRODUCT_NAME": "Pizza-large Pepperoni",
                         "PRICE_PAID": 12.59,
                         "QUANTITY": 1,
                         "NOTES": ""

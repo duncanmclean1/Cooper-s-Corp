@@ -7,7 +7,7 @@ public class JsonStructures {
 
     static class OrderDetailEntryJson {
         int ORDER_NUMBER;
-        int PRODUCT_ID;
+        String PRODUCT_NAME;
         double PRICE_PAID;
         int QUANTITY;
         String NOTES;
@@ -16,7 +16,7 @@ public class JsonStructures {
 
         @Override
         public String toString() {
-            return "\n{\n\tORDER_NUMBER: " + ORDER_NUMBER + "\n\tPRODUCT_ID: " + PRODUCT_ID + "\n\tPRICE_PAID: "
+            return "\n{\n\tORDER_NUMBER: " + ORDER_NUMBER + "\n\tPRODUCT_NAME: " + PRODUCT_NAME + "\n\tPRICE_PAID: "
                     + PRICE_PAID + "\n\tQUANTITY: " + QUANTITY + "\n\tNOTES: " + NOTES + "\n}\n";
         }
     }
