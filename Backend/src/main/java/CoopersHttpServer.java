@@ -185,32 +185,38 @@ public class CoopersHttpServer {
                 JsonStructures.OrderDetailEntryJson orderDetailEntryJson = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.OrderDetailEntryJson.class);
 
-                String sqlQuery = "INSERT INTO ORDER_DETAIL (ORDER_NUMBER, PRODUCT_ID, PRICE_PAID, QUANTITY, NOTES, ORDER_DETAIL_KEY) VALUES ("
-                        + orderDetailEntryJson.ORDER_NUMBER + ", " + orderDetailEntryJson.PRODUCT_ID + ", " + orderDetailEntryJson.PRICE_PAID + ", "
-                        + orderDetailEntryJson.QUANTITY + ", '" + orderDetailEntryJson.NOTES + "', " + "ORDER_DETAIL_SEQ.nextval);";
-                // System.out.println(sqlQuery);
-
                 ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailEntries = new ArrayList<>();
 
                 int ORDER_DETAIL_KEY = -1;
                 String response;
                 try {
+                    // grab the PRODUCT_ID associated with the PRODUCT_NAME
+                    String sqlQuery = "SELECT PRODUCT_ID FROM PRODUCT WHERE PRODUCT_NAME = '" + orderDetailEntryJson.PRODUCT_NAME + "';";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet.next();
+                    int PRODUCT_ID = resultSet.getInt("PRODUCT_ID");
+
+                    // insert new ORDER_DETAIL record
+                    sqlQuery = "INSERT INTO ORDER_DETAIL (ORDER_NUMBER, PRODUCT_ID, PRICE_PAID, QUANTITY, NOTES, ORDER_DETAIL_KEY) VALUES ("
+                        + orderDetailEntryJson.ORDER_NUMBER + ", " + PRODUCT_ID + ", " + orderDetailEntryJson.PRICE_PAID + ", "
+                        + orderDetailEntryJson.QUANTITY + ", '" + orderDetailEntryJson.NOTES + "', " + "ORDER_DETAIL_SEQ.nextval);";
+                    // System.out.println(sqlQuery);
                     SnowFlakeConnector.sendQuery(sqlQuery);
 
                     // grab the ORDER_DETAIL_KEY associated with the above created new ORDER_DETAIL record
                     sqlQuery = "SELECT MAX(ORDER_DETAIL_KEY) FROM ORDER_DETAIL;";
-                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
                     ORDER_DETAIL_KEY = resultSet.getInt("MAX(ORDER_DETAIL_KEY)");
 
                     // grab current cart
-                    sqlQuery = "SELECT * FROM ORDER_DETAIL WHERE ORDER_NUMBER = " + orderDetailEntryJson.ORDER_NUMBER + ";";
+                    sqlQuery = "SELECT * FROM ORDER_DETAIL O\nJOIN PRODUCT P\n\tON O.PRODUCT_ID = P.PRODUCT_ID\nWHERE ORDER_NUMBER = " + orderDetailEntryJson.ORDER_NUMBER + ";";
                     // System.out.println(sqlQuery);
                     resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     while ( resultSet.next() ) {
                         JsonStructures.OrderDetailEntryJson detail = new JsonStructures.OrderDetailEntryJson();
                         detail.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
-                        detail.PRODUCT_ID = resultSet.getInt("PRODUCT_ID");
+                        detail.PRODUCT_NAME = resultSet.getString("PRODUCT_NAME");
                         detail.PRICE_PAID = resultSet.getDouble("PRICE_PAID");
                         detail.QUANTITY = resultSet.getInt("QUANTITY");
                         detail.NOTES = resultSet.getString("NOTES");
@@ -255,13 +261,13 @@ public class CoopersHttpServer {
                     SnowFlakeConnector.sendQuery(sqlQuery);
                     //System.out.println(sqlQuery);
 
-                    sqlQuery = "SELECT * FROM ORDER_DETAIL WHERE ORDER_NUMBER = " + orderDetailKeyJson.ORDER_NUMBER + ";";
-                    // System.out.println(sqlQuery);
+                    sqlQuery = "SELECT * FROM ORDER_DETAIL O\nJOIN PRODUCT P\n\tON O.PRODUCT_ID = P.PRODUCT_ID\nWHERE ORDER_NUMBER = " + orderDetailKeyJson.ORDER_NUMBER + ";";
+                    //System.out.println(sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     while ( resultSet.next() ) {
                         JsonStructures.OrderDetailEntryJson detail = new JsonStructures.OrderDetailEntryJson();
                         detail.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
-                        detail.PRODUCT_ID = resultSet.getInt("PRODUCT_ID");
+                        detail.PRODUCT_NAME = resultSet.getString("PRODUCT_NAME");
                         detail.PRICE_PAID = resultSet.getDouble("PRICE_PAID");
                         detail.QUANTITY = resultSet.getInt("QUANTITY");
                         detail.NOTES = resultSet.getString("NOTES");
