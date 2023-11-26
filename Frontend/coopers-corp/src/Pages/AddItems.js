@@ -1,4 +1,4 @@
-import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField, Grid, FormControl, NativeSelect } from "@material-ui/core";
+import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField, Grid} from "@material-ui/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -8,6 +8,8 @@ export default function AddItems() {
     const [notes, setNotes] = useState({notes:""});
     const [cartItems, setCartItems] = useState();
     const {orderNumber} = useParams();
+    const [productName, setProductName] = useState({productName:""});
+
         useEffect(() => {
             fetch('/api/showmenu', {
                 method: 'GET',
@@ -19,6 +21,7 @@ export default function AddItems() {
             .then((response) => response.json())
             .then((response) => {
                 setMenu(response);
+                console.log(response)
             })
         }, []) 
 
@@ -26,24 +29,42 @@ export default function AddItems() {
             event.preventDefault();
             const addOrderDetail = {
                 "ORDER_NUMBER": orderNumber,
+                "PRODUCT_NAME": productName.productName,
                 "PRICE_PAID": orderNumber*quantity.quantity,
-                "QUANTITY": Number(quantity.quantity),
+                "QUANTITY": quantity.quantity,
                 "NOTES": notes.notes
-            };
+            }
             fetch('/api/addorderdetail', {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(addOrderDetail),
+                })
+                .then((response) => response.json())
+                .then((response) => {
+                    setCartItems(response.CART)
+                })
+                .catch((error) => console.log(error))
+        }
+        
+        const handleCancelOrder = (event) => {
+            event.preventDefault();
+            const cancelOrder = {
+                "ORDER_NUMBER": orderNumber
+            }
+            fetch('/api/cancelorder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(addOrderDetail),
+                body: JSON.stringify(cancelOrder),
             })
             .then((response) => response.json())
-            .then((response) => {
-                setCartItems(response.CART)
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+            .catch((error) => console.log(error))
+        }
+        const handleProductName = productName => event => {
+            setProductName({...productName, [productName]: event.target.value})
         }
         const handleQuantity = quantity => event => {
             setQuantity({...quantity, [quantity]: event.target.value})
@@ -96,21 +117,18 @@ export default function AddItems() {
                 <Typography variant="h6">Add Item</Typography>
             </Grid>
             <Box sx={{ minWidth: 120 }}>
-      <FormControl fullWidth>
-        <NativeSelect
-          inputProps={{
-            name: 'item',
-            id: 'uncontrolled-native',
-          }}
-        >
-        {menu?.map((item, index) => (
-            <option key={index}>{item.PRODUCT_NAME}</option>
-        ))}
-        </NativeSelect>
-      </FormControl>
     </Box>
             <Grid container rowSpacing={2}>
                 <Grid item xs={6}>
+                <TextField 
+                margin="normal"
+                id="Product Name"
+                label="Product Name"
+                name="Product Name"
+                variant="outlined"
+                value={productName.productName}
+                onChange={handleProductName("productName")}
+                />
                 <TextField
                 margin="normal"
                 required={true}
@@ -138,22 +156,29 @@ export default function AddItems() {
                 <Button fullWidth={true} onClick={handleSubmit}>Add Item</Button>
     <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h6">Cart</Typography>
-      <Grid container spacing={3}>
-        {cartItems?.map((things, index) => (
-            <>
-                <Grid item xs>
-                    <Typography>{things.QUANTITY}</Typography>
-                </Grid><Grid item xs={6}>
-                    <Typography>{things.PRICE_PAID}</Typography>
-                </Grid><Grid item xs>
-                    <Typography>{things.NOTES}</Typography>
-                </Grid>
-            </>
+        <TableContainer component={Paper}>
+                <Table sx={{minWidth: 650}} aria-label="Menu">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Notes</TableCell>
+                            <TableCell>Quantity</TableCell>
+                        </TableRow>
+                    </TableHead>        
+        {cartItems?.map((cart, index) => (
+            <TableBody key={index}>
+                <TableCell>{cart.PRODUCT_NAME}</TableCell>
+                <TableCell>{cart.NOTES}</TableCell>
+                <TableCell>{cart.QUANTITY}</TableCell>
+                <Button>Delete Item</Button>
+            </TableBody>
         ))}
-      </Grid>
+                </Table>
+            </TableContainer>
+        </Box>
     </Box>
-            </Box>
-            </Box>
-        </Container>
+    <Button fullWidth={true} onClick={handleCancelOrder}>Cancel Order</Button>
+    </Box>
+</Container>
     )
 }
