@@ -1,7 +1,7 @@
 import {Container, Box, Typography, TextField, Button} from "@material-ui/core";
 import { Alert } from "@mui/material";
 import {useState } from "react";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 export default function Login() {
       const [employeeId, setEmployeeId] = useState({employeeId:""});
       const [password, setPassword] = useState({password: ""});
@@ -37,7 +37,7 @@ export default function Login() {
               alertType: "success",
               alertMessage: "Successfully logged in.",
             });
-            navigate("/dashboard");
+            navigate(`/dashboard/${employeeId.employeeId}`);
           }
           else {
             setData({
@@ -90,8 +90,8 @@ export default function Login() {
               />
               <TextField
                 margin="normal"
-                required
-                fullWidth
+                required={true}
+                fullWidth={true}
                 name="password"
                 label="Password"
                 type="password"
@@ -106,8 +106,9 @@ export default function Login() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-               onClick={handleSubmit}
-                href="/dashboard"
+                component={Link}
+                onClick={handleSubmit}
+                href={`/dashboard/${employeeId.employeeId}`}
               >
                 Sign In
               </Button>

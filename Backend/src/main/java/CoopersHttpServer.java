@@ -583,7 +583,7 @@ public class CoopersHttpServer {
 
                     // send response
                     exchange.sendResponseHeaders(201, 0);
-                    response = "{\n\t\"EMPLOYEE_ID:\": " + EMPLOYEE_ID + "\n}";
+                    response = "{\n\t\"EMPLOYEE_ID\": " + EMPLOYEE_ID + "\n}";
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
                     response = "SQL error";
@@ -622,11 +622,11 @@ public class CoopersHttpServer {
                     System.out.println("Sent Query");
                     SnowFlakeConnector.sendQuery(sqlQuery);
                     exchange.sendResponseHeaders(200, 0);
-                    response = "{\"isUpdated:\": \"true\"}";
+                    response = "{\"isUpdated\": \"true\"}";
                 } catch (SQLException e) {
                     // Failed response
                     exchange.sendResponseHeaders(422, 0);
-                    response = "{\"isUpdated:\": \"false\"}";
+                    response = "{\"isUpdated\": \"false\"}";
                     e.printStackTrace();
                 }
 

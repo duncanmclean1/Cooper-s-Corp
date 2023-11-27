@@ -1,6 +1,8 @@
 import { Grid,Button, Typography } from "@material-ui/core";
+import { useParams } from "react-router-dom";
 
-  export default function App() {  
+  export default function DashboardPage() {  
+    const {employeeId} = useParams();
     return (
     <Grid container spacing={2}>
         <Grid item container justifyContent="center" alignContent="center">
@@ -8,7 +10,7 @@ import { Grid,Button, Typography } from "@material-ui/core";
         </Grid>
         <Grid item container justifyContent="center" alignContent="center" direction="column" spacing={2}>
             <Grid item spacing={2}>
-                <Button variant="outlined" href="/customerdetails">
+                <Button variant="outlined" href={`/customerdetails/${employeeId}`}>
                     Create Order
                 </Button>
             </Grid>
@@ -18,7 +20,7 @@ import { Grid,Button, Typography } from "@material-ui/core";
                 </Button>
             </Grid>
             <Grid item spacing={2}>
-                <Button variant="outlined" href="/editemployee">
+            <Button variant="outlined" href={`/editemployee/${employeeId}`}>
                     Edit Employee
                 </Button>
             </Grid>
