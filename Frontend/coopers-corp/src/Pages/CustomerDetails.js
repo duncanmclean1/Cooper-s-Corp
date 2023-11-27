@@ -24,7 +24,7 @@ export default function CustomerDetails() {
         })
         .then((response) => response.json())
         .then((response) => {
-            navigate(`/additems/${response.ORDER_NUMBER}`)
+            navigate(`/additems/${employeeId}/${response.ORDER_NUMBER}`)
         })
         .catch((error) => {
             console.log(error);

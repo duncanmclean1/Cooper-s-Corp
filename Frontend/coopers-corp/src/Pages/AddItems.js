@@ -1,6 +1,6 @@
 import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField, Grid} from "@material-ui/core";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export default function AddItems() {    
     const [menu, setMenu] = useState();
@@ -9,7 +9,10 @@ export default function AddItems() {
     const [cartItems, setCartItems] = useState();
     const {orderNumber} = useParams();
     const [productName, setProductName] = useState({productName:""});
+    const {employeeId} = useParams();
+    const navigate = useNavigate();
 
+    console.log(employeeId);
         useEffect(() => {
             fetch('/api/showmenu', {
                 method: 'GET',
@@ -61,8 +64,12 @@ export default function AddItems() {
                 body: JSON.stringify(cancelOrder),
             })
             .then((response) => response.json())
+            .then((response) => {
+                navigate(`/dashboard/${employeeId}`)
+            })
             .catch((error) => console.log(error))
         }
+
         const handleProductName = productName => event => {
             setProductName({...productName, [productName]: event.target.value})
         }
