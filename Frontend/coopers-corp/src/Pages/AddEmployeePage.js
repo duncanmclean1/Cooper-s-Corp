@@ -8,22 +8,20 @@ import React, {useState} from "react";
 export default function AddEmployee() {
     const [openPopup, setOpenPopup] = useState(false);
     const [errorPopup, setErrorPopup] = useState(false);
-    const [employeeId, setEmployeeId] = useState({employeeId: ""});
     const [firstName, setFirstName] = useState({firstName: ""});
     const [lastName, setLastName] = useState({lastName: ""});
     const [password, setPassword] = useState({password: ""});
 
-    const arr = ["1111", "2222", "3333"];
     const handleClose = () => {
         setOpenPopup(false);
       };
       const handleClick = (event) => {
         event.preventDefault();
-        if (employeeId.employeeId == "" || firstName.firstName == "" || lastName.lastName == "" || password.password == "") {
+        if (firstName.firstName == "" || lastName.lastName == "" || password.password == "") {
           setErrorPopup(true);
         }
         else {
-          console.log({"EMPLOYEE_ID": employeeId.employeeId, "FIRST_NAME": firstName.firstName, "LAST_NAME":lastName.lastName, "PASSWORD": password.password })                                                                 
+          console.log({"FIRST_NAME": firstName.firstName, "LAST_NAME":lastName.lastName, "PASSWORD": password.password})                                                                 
           setOpenPopup(true);
         }
       }
@@ -31,12 +29,28 @@ export default function AddEmployee() {
         event.preventDefault();
         setErrorPopup(false)
       }
-      const handleSubmit = (event) => {
+      const handleConfirmSubmit = (event) => {
         event.preventDefault();
+        const newEmployee = {  
+        "FIRST_NAME": firstName.firstName,
+        "LAST_NAME": lastName.lastName,
+        "PASSWORD": password.password};
+        fetch('/api/addemployee', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newEmployee),
+        })
+          .then((response) => response.json())
+          .then((newEmployee) => {
+            console.log('New employee:', newEmployee);
+          })
+          .catch((e) => {
+            console.error(e);
+          });
       }
-      const handleEmployeeId = employeeId => event => {
-        setEmployeeId({...employeeId, [employeeId]: event.target.value})
-      }
+
       const handleFirstName = firstName => event => {
         setFirstName({...firstName, [firstName]: event.target.value})
       }      
@@ -46,21 +60,10 @@ export default function AddEmployee() {
       const handlePassword = password => event => {
         setPassword({...password, [password]: event.target.value})
       }
-      const error = arr.includes(employeeId.employeeId); 
   return ( 
       <Container maxWidth='sm'>
       <Box component = 'form' display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} padding='20px'>
-      <TextField
-      required 
-      id = "employeeId"
-      name = "employeeId"
-      label="Employee ID"
-      value = {employeeId.employeeId}
-      onChange={handleEmployeeId("employeeId")}
-      helperText={error ? "Employee ID already exists" : ""}
-      error={error}
-      autoFocus
-     />
+  
       <TextField
       required 
       value = {firstName.firstName}
@@ -68,6 +71,7 @@ export default function AddEmployee() {
       id = "firstName"
       name = "firstName"
       label="First Name"
+      autoFocus
      />
       <TextField
       required
@@ -105,7 +109,7 @@ export default function AddEmployee() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose} autoFocus href="/dashboard">
+          <Button onClick={handleConfirmSubmit} autoFocus href="/dashboard">
             Submit
           </Button>
         </DialogActions>
