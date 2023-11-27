@@ -240,7 +240,6 @@ ENDPOINT: localhost:8001/api/addorderdetail
         {
             "ORDER_NUMBER": 2,
             "PRODUCT_NAME": "Pizza-small Pepperoni",
-            "PRICE_PAID": 7.35,
             "QUANTITY": 2,
             "NOTES": "light on the pepperoni please"
         }
@@ -250,10 +249,11 @@ ENDPOINT: localhost:8001/api/addorderdetail
         FAILURE: 422
     RESPONSE BODY:
         {
-            "ORDER_DETAIL_KEY: 2,
+            "CART_TOTAL": 19.94,
             "CART":
                 [
                     {
+                        "ORDER_DETAIL_KEY: 2,
                         "ORDER_NUMBER": 2,
                         "PRODUCT_NAME": "Pizza-small Pepperoni",
                         "PRICE_PAID": 7.35,
@@ -261,6 +261,7 @@ ENDPOINT: localhost:8001/api/addorderdetail
                         "NOTES": "light on the pepperoni please"
                     },
                     {
+                        "ORDER_DETAIL_KEY: 3,
                         "ORDER_NUMBER": 2,
                         "PRODUCT_NAME": "Pizza-large Pepperoni",
                         "PRICE_PAID": 12.59,
@@ -286,9 +287,11 @@ ENDPOINT: localhost:8001/api/removeorderdetail
         FAILURE: 422
     RESPONSE BODY:
         {
+            "CART_TOTAL": 12.59,
             "CART":
                 [
                     {
+                        "ORDER_DETAIL_KEY: 3,
                         "ORDER_NUMBER": 2,
                         "PRODUCT_NAME": "Pizza-large Pepperoni",
                         "PRICE_PAID": 12.59,
@@ -315,4 +318,25 @@ ENDPOINT: localhost:8001/api/showmenu
             "PRICE": 12.34,
             "PRODUCT_NAME": "Pizza",
             "SIZE_NAME": "Large"
+        }
+
+
+
+ENDPOINT: localhost:8001/api/calculatecarttotal
+    REQUEST METHOD: 
+        POST
+    REQUEST BODY:
+    {
+        "ORDER_NUMBER": 100,
+        "DISCOUNT": 10
+    }
+
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 404
+    
+    RESPONSE BODY:
+        {
+            "DISCOUNTED_CART_TOTAL": 90
         }

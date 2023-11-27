@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-
 import com.google.gson.Gson;
 
 public class CoopersHttpServer {
@@ -187,27 +186,23 @@ public class CoopersHttpServer {
 
                 ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailEntries = new ArrayList<>();
 
-                int ORDER_DETAIL_KEY = -1;
+                double CART_TOTAL = 0.0;
                 String response;
                 try {
-                    // grab the PRODUCT_ID associated with the PRODUCT_NAME
-                    String sqlQuery = "SELECT PRODUCT_ID FROM PRODUCT WHERE PRODUCT_NAME = '" + orderDetailEntryJson.PRODUCT_NAME + "';";
+                    // grab the PRODUCT_ID, PRICE associated with the PRODUCT_NAME
+                    String sqlQuery = "SELECT PRODUCT_ID, PRICE FROM PRODUCT WHERE PRODUCT_NAME = '" + orderDetailEntryJson.PRODUCT_NAME + "';";
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
                     int PRODUCT_ID = resultSet.getInt("PRODUCT_ID");
+                    double PRODUCT_PRICE = resultSet.getDouble("PRICE");
+                    double PRICE_PAID = PRODUCT_PRICE * orderDetailEntryJson.QUANTITY;
 
                     // insert new ORDER_DETAIL record
                     sqlQuery = "INSERT INTO ORDER_DETAIL (ORDER_NUMBER, PRODUCT_ID, PRICE_PAID, QUANTITY, NOTES, ORDER_DETAIL_KEY) VALUES ("
-                        + orderDetailEntryJson.ORDER_NUMBER + ", " + PRODUCT_ID + ", " + orderDetailEntryJson.PRICE_PAID + ", "
+                        + orderDetailEntryJson.ORDER_NUMBER + ", " + PRODUCT_ID + ", " + PRICE_PAID + ", "
                         + orderDetailEntryJson.QUANTITY + ", '" + orderDetailEntryJson.NOTES + "', " + "ORDER_DETAIL_SEQ.nextval);";
                     // System.out.println(sqlQuery);
                     SnowFlakeConnector.sendQuery(sqlQuery);
-
-                    // grab the ORDER_DETAIL_KEY associated with the above created new ORDER_DETAIL record
-                    sqlQuery = "SELECT MAX(ORDER_DETAIL_KEY) FROM ORDER_DETAIL;";
-                    resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
-                    resultSet.next();
-                    ORDER_DETAIL_KEY = resultSet.getInt("MAX(ORDER_DETAIL_KEY)");
 
                     // grab current cart
                     sqlQuery = "SELECT * FROM ORDER_DETAIL O\nJOIN PRODUCT P\n\tON O.PRODUCT_ID = P.PRODUCT_ID\nWHERE ORDER_NUMBER = " + orderDetailEntryJson.ORDER_NUMBER + ";";
@@ -215,12 +210,14 @@ public class CoopersHttpServer {
                     resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     while ( resultSet.next() ) {
                         JsonStructures.OrderDetailEntryJson detail = new JsonStructures.OrderDetailEntryJson();
+                        detail.ORDER_DETAIL_KEY = resultSet.getInt("ORDER_DETAIL_KEY");
                         detail.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
                         detail.PRODUCT_NAME = resultSet.getString("PRODUCT_NAME");
                         detail.PRICE_PAID = resultSet.getDouble("PRICE_PAID");
                         detail.QUANTITY = resultSet.getInt("QUANTITY");
                         detail.NOTES = resultSet.getString("NOTES");
                         listOfOrderDetailEntries.add(detail);
+                        CART_TOTAL += detail.PRICE_PAID;
                     }
                     exchange.sendResponseHeaders(201, 0);
                 } catch (SQLException e) {
@@ -231,7 +228,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                response = "{\n\t\"ORDER_DETAIL_KEY\": " + ORDER_DETAIL_KEY + ",\n\t\"CART\": \n" + gson.toJson(listOfOrderDetailEntries) + "\n}";
+                response = "{\n\t\"CART_TOTAL\": " + CART_TOTAL + ",\n\t\"CART\": \n\t" + gson.toJson(listOfOrderDetailEntries) + "\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -254,7 +251,7 @@ public class CoopersHttpServer {
                         JsonStructures.OrderDetailKeyJson.class);
 
                 ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailEntries = new ArrayList<>();
-
+                double CART_TOTAL = 0.0;
                 String response;
                 try {
                     String sqlQuery = "DELETE FROM ORDER_DETAIL WHERE ORDER_DETAIL_KEY = " + orderDetailKeyJson.ORDER_DETAIL_KEY + ";";
@@ -266,11 +263,13 @@ public class CoopersHttpServer {
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     while ( resultSet.next() ) {
                         JsonStructures.OrderDetailEntryJson detail = new JsonStructures.OrderDetailEntryJson();
+                        detail.ORDER_DETAIL_KEY = resultSet.getInt("ORDER_DETAIL_KEY");
                         detail.ORDER_NUMBER = resultSet.getInt("ORDER_NUMBER");
                         detail.PRODUCT_NAME = resultSet.getString("PRODUCT_NAME");
                         detail.PRICE_PAID = resultSet.getDouble("PRICE_PAID");
                         detail.QUANTITY = resultSet.getInt("QUANTITY");
                         detail.NOTES = resultSet.getString("NOTES");
+                        CART_TOTAL += detail.PRICE_PAID;
                         listOfOrderDetailEntries.add(detail);
                     }
                     exchange.sendResponseHeaders(200, 0);
@@ -282,7 +281,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                response = "{\n\t\"CART\": \n" + gson.toJson(listOfOrderDetailEntries) + "\n}";
+                response = "{\n\t\"CART_TOTAL\": " + CART_TOTAL + ",\n\t\"CART\": \n\t" + gson.toJson(listOfOrderDetailEntries) + "\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -351,7 +350,8 @@ public class CoopersHttpServer {
                 JsonStructures.OrderDetailJson orderDetail = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.OrderDetailJson.class);
 
-                StringBuilder response = new StringBuilder();
+                String response;
+                JsonStructures.OrderDetail orderDetailOut = new JsonStructures.OrderDetail();
                 // send queries to snowflake
                 try {
                     String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nWHERE O.ORDER_NUMBER = "
@@ -359,27 +359,24 @@ public class CoopersHttpServer {
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
-                    int EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
-                    String PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
-                    String TIME = resultSet.getString("TIME");
-                    String FIRST_NAME = resultSet.getString("FIRST_NAME");
-                    String LAST_NAME = resultSet.getString("LAST_NAME");
-                    int ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
+                    orderDetailOut.ORDER_NUMBER = orderDetail.ORDER_NUMBER;
+                    orderDetailOut.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
+                    orderDetailOut.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
+                    orderDetailOut.TIME = resultSet.getString("TIME");
+                    orderDetailOut.FIRST_NAME = resultSet.getString("FIRST_NAME");
+                    orderDetailOut.LAST_NAME = resultSet.getString("LAST_NAME");
+                    orderDetailOut.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
 
-                    // send results
-                    response.append("{\n\t\"ORDER_NUMBER:\": " + orderDetail.ORDER_NUMBER + ",");
-                    response.append("\n\t\"EMPLOYEE_ID\": " + EMPLOYEE_ID + ",");
-                    response.append("\n\t\"FIRST_NAME\": \'" + FIRST_NAME + "',");
-                    response.append("\n\t\"LAST_NAME\": \'" + LAST_NAME + "',");
-                    response.append("\n\t\"TIME\": \'" + TIME + "',");
-                    response.append("\n\t\"PHONE_NUMBER\": \'" + PHONE_NUMBER + "',");
-                    response.append("\n\t\"ZIPCODE_KEY\": " + ZIPCODE_KEY + "\n}");
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    response.append("{\n\tSQL ERROR\n}");
+                    response = "{\n\tSQL ERROR\n}";
                     exchange.sendResponseHeaders(404, 0);
                 }
+
+                // Convert to JSON format
+                Gson gson = new Gson();
+                response = gson.toJson(orderDetailOut);
 
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.toString().getBytes());
@@ -687,6 +684,45 @@ public class CoopersHttpServer {
         }
     }
 
+    static class CalculateCartTotalHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            System.out.println("Calculate Cart Total API Called");
+            if ("POST".equals(exchange.getRequestMethod())) {
+                String requestBodyJsonString = readRequestBody(exchange.getRequestBody());
+                JsonStructures.CartTotalJson cartTotal = new Gson().fromJson(requestBodyJsonString,
+                        JsonStructures.CartTotalJson.class);
+
+                double CART_TOTAL = 0.0;
+                String response;
+                // send queries to snowflake
+                try {
+                    String sqlQuery = "SELECT PRICE_PAID FROM ORDER_DETAIL WHERE ORDER_NUMBER = " + cartTotal.ORDER_NUMBER + ";";
+                    var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
+
+                    while (resultSet.next()) {
+                        CART_TOTAL += resultSet.getDouble("PRICE_PAID");
+                    }
+                    double DISCOUNTED_CART_TOTAL = Math.round(CART_TOTAL*(100.0 - cartTotal.DISCOUNT)) / 100.0;
+
+                    response = "{\n\t\"DISCOUNTED_CART_TOTAL\": " + DISCOUNTED_CART_TOTAL + "\n}";
+                    exchange.sendResponseHeaders(200, 0);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    response = "{\n\tERROR\n}";
+                    exchange.sendResponseHeaders(422, 0);
+                }
+
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.toString().getBytes());
+                }
+                System.out.println("Sent response");
+            }
+        }
+    }
+
+
+
     public static void main(String[] args) throws SQLException {
         // start the backend server
         HttpServer backendServer;
@@ -710,6 +746,7 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/showemployees", new ShowEmployeesHandler());
         backendServer.createContext("/api/updateemployee", new UpdateEmployeeHandler());
         backendServer.createContext("/api/showmenu", new ShowMenuHandler());
+        backendServer.createContext("/api/calculatecarttotal", new CalculateCartTotalHandler());
 
         // start the backend server
         System.out.println("Running on port: 8001\n");
