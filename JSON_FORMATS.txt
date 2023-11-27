@@ -250,7 +250,7 @@ ENDPOINT: localhost:8001/api/addorderdetail
     RESPONSE BODY:
         {
             "ORDER_DETAIL_KEY: 2,
-            "CART_TOTAL": 
+            "CART_TOTAL": 19.94,
             "CART":
                 [
                     {
@@ -286,6 +286,7 @@ ENDPOINT: localhost:8001/api/removeorderdetail
         FAILURE: 422
     RESPONSE BODY:
         {
+            "CART_TOTAL": 12.59,
             "CART":
                 [
                     {

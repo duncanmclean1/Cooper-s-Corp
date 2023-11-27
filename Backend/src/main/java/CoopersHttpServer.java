@@ -187,6 +187,7 @@ public class CoopersHttpServer {
                 ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailEntries = new ArrayList<>();
 
                 int ORDER_DETAIL_KEY = -1;
+                double CART_TOTAL = 0.0;
                 String response;
                 try {
                     // grab the PRODUCT_ID, PRICE associated with the PRODUCT_NAME
@@ -222,6 +223,7 @@ public class CoopersHttpServer {
                         detail.QUANTITY = resultSet.getInt("QUANTITY");
                         detail.NOTES = resultSet.getString("NOTES");
                         listOfOrderDetailEntries.add(detail);
+                        CART_TOTAL += detail.PRICE_PAID;
                     }
                     exchange.sendResponseHeaders(201, 0);
                 } catch (SQLException e) {
@@ -232,7 +234,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                response = "{\n\t\"ORDER_DETAIL_KEY\": " + ORDER_DETAIL_KEY + ",\n\t\"CART\": \n" + gson.toJson(listOfOrderDetailEntries) + "\n}";
+                response = "{\n\t\"ORDER_DETAIL_KEY\": " + ORDER_DETAIL_KEY + ",\n\t\"CART_TOTAL\": " + CART_TOTAL + ",\n\t\"CART\": \n\t" + gson.toJson(listOfOrderDetailEntries) + "\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -255,7 +257,7 @@ public class CoopersHttpServer {
                         JsonStructures.OrderDetailKeyJson.class);
 
                 ArrayList<JsonStructures.OrderDetailEntryJson> listOfOrderDetailEntries = new ArrayList<>();
-
+                double CART_TOTAL = 0.0;
                 String response;
                 try {
                     String sqlQuery = "DELETE FROM ORDER_DETAIL WHERE ORDER_DETAIL_KEY = " + orderDetailKeyJson.ORDER_DETAIL_KEY + ";";
@@ -272,6 +274,7 @@ public class CoopersHttpServer {
                         detail.PRICE_PAID = resultSet.getDouble("PRICE_PAID");
                         detail.QUANTITY = resultSet.getInt("QUANTITY");
                         detail.NOTES = resultSet.getString("NOTES");
+                        CART_TOTAL += detail.PRICE_PAID;
                         listOfOrderDetailEntries.add(detail);
                     }
                     exchange.sendResponseHeaders(200, 0);
@@ -283,7 +286,7 @@ public class CoopersHttpServer {
 
                 // Converts ArrayList to JSON format
                 Gson gson = new Gson();
-                response = "{\n\t\"CART\": \n" + gson.toJson(listOfOrderDetailEntries) + "\n}";
+                response = "{\n\t\"CART_TOTAL\": " + CART_TOTAL + ",\n\t\"CART\": \n\t" + gson.toJson(listOfOrderDetailEntries) + "\n}";
                 // System.out.println("Converting to JSON");
 
                 try (OutputStream os = exchange.getResponseBody()) {
@@ -361,6 +364,7 @@ public class CoopersHttpServer {
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
+                    orderDetailOut.ORDER_NUMBER = orderDetail.ORDER_NUMBER;
                     orderDetailOut.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
                     orderDetailOut.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
                     orderDetailOut.TIME = resultSet.getString("TIME");
