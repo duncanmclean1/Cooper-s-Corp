@@ -6,6 +6,7 @@ public class JsonStructures {
     }
 
     static class OrderDetailEntryJson {
+        int ORDER_DETAIL_KEY;
         int ORDER_NUMBER;
         String PRODUCT_NAME;
         double PRICE_PAID;
@@ -115,6 +116,11 @@ public class JsonStructures {
 
     static class OrderDetailJson {
         int ORDER_NUMBER;
+    }
+
+    static class CartTotalJson {
+        int ORDER_NUMBER;
+        double DISCOUNT;
     }
 
     static class OrderDetailKeyJson {
