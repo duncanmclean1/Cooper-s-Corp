@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-
 import com.google.gson.Gson;
 
 public class CoopersHttpServer {
@@ -190,15 +189,17 @@ public class CoopersHttpServer {
                 int ORDER_DETAIL_KEY = -1;
                 String response;
                 try {
-                    // grab the PRODUCT_ID associated with the PRODUCT_NAME
-                    String sqlQuery = "SELECT PRODUCT_ID FROM PRODUCT WHERE PRODUCT_NAME = '" + orderDetailEntryJson.PRODUCT_NAME + "';";
+                    // grab the PRODUCT_ID, PRICE associated with the PRODUCT_NAME
+                    String sqlQuery = "SELECT PRODUCT_ID, PRICE FROM PRODUCT WHERE PRODUCT_NAME = '" + orderDetailEntryJson.PRODUCT_NAME + "';";
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
                     int PRODUCT_ID = resultSet.getInt("PRODUCT_ID");
+                    double PRODUCT_PRICE = resultSet.getDouble("PRICE");
+                    double PRICE_PAID = PRODUCT_PRICE * orderDetailEntryJson.PRICE_PAID;
 
                     // insert new ORDER_DETAIL record
                     sqlQuery = "INSERT INTO ORDER_DETAIL (ORDER_NUMBER, PRODUCT_ID, PRICE_PAID, QUANTITY, NOTES, ORDER_DETAIL_KEY) VALUES ("
-                        + orderDetailEntryJson.ORDER_NUMBER + ", " + PRODUCT_ID + ", " + orderDetailEntryJson.PRICE_PAID + ", "
+                        + orderDetailEntryJson.ORDER_NUMBER + ", " + PRODUCT_ID + ", " + PRICE_PAID + ", "
                         + orderDetailEntryJson.QUANTITY + ", '" + orderDetailEntryJson.NOTES + "', " + "ORDER_DETAIL_SEQ.nextval);";
                     // System.out.println(sqlQuery);
                     SnowFlakeConnector.sendQuery(sqlQuery);
@@ -367,13 +368,13 @@ public class CoopersHttpServer {
                     int ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
 
                     // send results
-                    response.append("{\n\t\"ORDER_NUMBER:\": " + orderDetail.ORDER_NUMBER + ",");
-                    response.append("\n\t\"EMPLOYEE_ID\": " + EMPLOYEE_ID + ",");
-                    response.append("\n\t\"FIRST_NAME\": \'" + FIRST_NAME + "',");
-                    response.append("\n\t\"LAST_NAME\": \'" + LAST_NAME + "',");
-                    response.append("\n\t\"TIME\": \'" + TIME + "',");
-                    response.append("\n\t\"PHONE_NUMBER\": \'" + PHONE_NUMBER + "',");
-                    response.append("\n\t\"ZIPCODE_KEY\": " + ZIPCODE_KEY + "\n}");
+                    response.append("{\"ORDER_NUMBER:\": " + orderDetail.ORDER_NUMBER + ", ");
+                    response.append("\"EMPLOYEE_ID\": " + EMPLOYEE_ID + ", ");
+                    response.append("\"FIRST_NAME\": \'" + FIRST_NAME + "', ");
+                    response.append("\"LAST_NAME\": \'" + LAST_NAME + "', ");
+                    response.append("\"TIME\": \'" + TIME + "', ");
+                    response.append("\"PHONE_NUMBER\": \'" + PHONE_NUMBER + "', ");
+                    response.append("\"ZIPCODE_KEY\": " + ZIPCODE_KEY + "}");
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
                     e.printStackTrace();
