@@ -126,6 +126,7 @@ export default function EditEmployeePage() {
             
         </TableBody>
     </Table>
+    <Button onClick={()=>navigate("/addemployee")}>Add new Employee</Button>
     <Dialog
         open={open}
         aria-labelledby="alert-dialog-title"

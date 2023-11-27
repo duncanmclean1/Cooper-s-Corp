@@ -20,6 +20,7 @@ export default function AddEmployee() {
     }
     const completedClose = () => {
       setSuccess(false);
+      navigate("/dashboard")
     }
     const handleClose = () => {
         setOpenPopup(false);
@@ -54,14 +55,13 @@ export default function AddEmployee() {
           .then((response) => response.json())
           .then((newEmployee) => {
             console.log('New employee:', newEmployee);
-            console.log("the" + newEmployee.EMPLOYEE_ID)
+            console.log("the " + newEmployee.EMPLOYEE_ID)
             setEmployeeId(newEmployee.EMPLOYEE_ID)
           })
           .catch((e) => {
             console.error(e);
           });
         setSuccess(true)
-        //navigate("/dashboard")
       }
 
       const handleFirstName = firstName => event => {
@@ -148,7 +148,7 @@ export default function AddEmployee() {
       </Dialog>
       <Dialog open={success} onClose={completedClose}> 
       <DialogContent> 
-        <Typography variant="subtitle1">Your unique Employee ID: </Typography>
+        <Typography variant="subtitle1">Your unique Employee ID: {employeeId}</Typography>
         </DialogContent>   
         <DialogActions>
           <Button onClick={completedClose}>OK</Button>
