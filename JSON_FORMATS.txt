@@ -240,7 +240,6 @@ ENDPOINT: localhost:8001/api/addorderdetail
         {
             "ORDER_NUMBER": 2,
             "PRODUCT_NAME": "Pizza-small Pepperoni",
-            "PRICE_PAID": 7.35,
             "QUANTITY": 2,
             "NOTES": "light on the pepperoni please"
         }
@@ -251,6 +250,7 @@ ENDPOINT: localhost:8001/api/addorderdetail
     RESPONSE BODY:
         {
             "ORDER_DETAIL_KEY: 2,
+            "CART_TOTAL": 
             "CART":
                 [
                     {
