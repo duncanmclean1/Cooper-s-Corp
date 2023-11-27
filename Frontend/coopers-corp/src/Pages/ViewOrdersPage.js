@@ -28,6 +28,7 @@ export default function ViewOrdersPage() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState();
   const [zipcode, setZipcode] = useState();
+  const [employeeId, setEmployeeId] = useState();
   const [rows, setRows] = useState([]);
   const [zipcodeRows, setZipcodeRows] = useState([]);
   const [zipcodeCount, setZipcodeCount] = useState("");
@@ -103,8 +104,13 @@ export default function ViewOrdersPage() {
   })
   const handleInput = (event) => {
     event.preventDefault();
+    if(sortBy==="Zipcode") {
     setZipcode(event.target.value);
     console.log(zipcode);
+    }
+    else if (sortBy=== "Employee"){
+      setEmployeeId(event.target.value);
+    }
   }
   const handleSelect = (event) => {
     event.preventDefault();
@@ -140,11 +146,11 @@ export default function ViewOrdersPage() {
   return (
     <Box>
     <Grid container spacing={2} margin={5}>
-      <Box component="section" sx={{p: 2, border:'1px solid grey'}}>
-        <Typography variant="h1" >View Single Order:</Typography>
-        <Typography variant="body1">Order ID:</Typography>
+      <Box component="section">
+        <Typography variant="h6" >View Single Order:</Typography>
         <Box display="flex" flex-direction="row">
-        <TextField variant="outlined" onChange={handleId}>Order ID: </TextField>
+        <Typography variant="body1" margin={5}>Order ID:</Typography>
+        <TextField variant="outlined"  onChange={handleId}>Order ID: </TextField>
         <Button onClick={handleSubmit}>ENTER</Button>
         </Box>
         <Table>
