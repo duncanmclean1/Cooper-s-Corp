@@ -316,3 +316,24 @@ ENDPOINT: localhost:8001/api/showmenu
             "PRODUCT_NAME": "Pizza",
             "SIZE_NAME": "Large"
         }
+
+
+
+ENDPOINT: localhost:8001/api/calculatecarttotal
+    REQUEST METHOD: 
+        POST
+    REQUEST BODY:
+    {
+        "CART_TOTAL": 100,
+        "DISCOUNT": 10
+    }
+
+
+    RESPONSE CODE(S):
+        SUCCESS: 200
+        FAILURE: 404
+    
+    RESPONSE BODY:
+        {
+            "DISCOUNTED_CART_TOTAL": 90
+        }
