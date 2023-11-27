@@ -26,7 +26,15 @@ import dayjs from 'dayjs';
 
 export default function ViewOrdersPage() {
   const navigate = useNavigate();
-  const [data, setData] = useState();
+  const [sortBy, setSortBy] = useState();
+  const [zipcode, setZipcode] = useState();
+  const [rows, setRows] = useState([]);
+  const [zipcodeRows, setZipcodeRows] = useState([]);
+  const [zipcodeCount, setZipcodeCount] = useState("");
+  const [employeeRows, setEmployeeRows] = useState([]);
+  const [zipcodeData, setZipCodeData] = useState({"ORDER_NUMBER": "", "EMPLOYEE_ID": "", "FIRST_NAME": "", "LAST_NAME": "", "TIME": "", "PHONE_NUMBER": "", "ZIPCODE_KEY": ""});
+  const [employeeData, setEmployeeData] = useState({"ORDER_NUMBER": "", "EMPLOYEE_ID": "", "FIRST_NAME": "", "LAST_NAME": "", "TIME": "", "PHONE_NUMBER": "", "ZIPCODE_KEY": ""});
+  const [data, setData] = useState({"ORDER_NUMBER": "", "EMPLOYEE_ID": "", "FIRST_NAME": "", "LAST_NAME": "", "TIME": "", "PHONE_NUMBER": "", "ZIPCODE_KEY": ""});
   const [id, setId] = useState("");
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
@@ -36,12 +44,70 @@ export default function ViewOrdersPage() {
     console.log("hi");
     console.log(id);
   };
+  
   const multiOrder = (event) => {
     event.preventDefault();
-    const formattedStartDate = (dayjs(start).format('YYYY-MM-DDTHH:mm:ss'))
-    const formattedEndDate = (dayjs(end).format('YYYY-MM-DDTHH:mm:ss'))
+    const formattedStartDate = (dayjs(start).format('YYYY-MM-DD HH:mm:ss'))
+    const formattedEndDate = (dayjs(end).format('YYYY-MM-DD HH:mm:ss'))
     console.log("start" + formattedStartDate)
     console.log("end" + formattedEndDate)
+
+    console.log("zipcode: " + zipcode)
+    if (sortBy==="Zipcode") {
+    const viewZipcodeOrder = {"ZIPCODE_KEY": zipcode, "TIME_BEGIN": formattedStartDate, "TIME_END": formattedEndDate};
+    fetch('/api/viewordersbyzipcode', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(viewZipcodeOrder),
+    })
+    .then((response) => response.json())
+    .then((viewOrder) => {
+      console.log("view order" + viewOrder);
+      console.log(viewOrder.ORDER_DETAILS_LIST);
+      setRows(viewOrder.ORDER_DETAILS_LIST);
+
+    })
+  }
+  else if(sortBy==="Employee") {
+    const viewEmployeeOrder = {
+      "EMPLOYEE_ID": 1234,
+      "TIME_BEGIN": formattedStartDate,
+      "TIME_END": formattedEndDate
+  };
+    fetch('/api/viewordersbyemployee', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(viewEmployeeOrder),
+    })
+    .then((response) => response.json())
+    .then((viewOrder) => {
+      console.log(viewOrder);
+      console.log(viewOrder.ORDER_DETAILS_LIST);
+      setRows(viewOrder.ORDER_DETAILS_LIST);
+
+    })
+  }
+
+  };
+  const DisplayData = rows.map((row) => {
+    return(<TableRow>
+      <TableCell> {row.ORDER_NUMBER}</TableCell>
+      <TableCell> {row.EMPLOYEE_ID}</TableCell>
+      <TableCell> {row.FIRST_NAME}</TableCell>
+      <TableCell> {row.LAST_NAME}</TableCell>
+      <TableCell> {row.TIME}</TableCell>
+      <TableCell> {row.PHONE_NUMBER}</TableCell>
+      <TableCell> {row.ZIPCODE_KEY}</TableCell>
+    </TableRow>)
+  })
+  const handleInput = (event) => {
+    event.preventDefault();
+    setZipcode(event.target.value);
+    console.log(zipcode);
+  }
+  const handleSelect = (event) => {
+    event.preventDefault();
+    setSortBy(event.target.value);
   }  
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -57,6 +123,12 @@ export default function ViewOrdersPage() {
     })
       .then((response) => response.json())
       .then((viewOrder) => {
+        if (viewOrder.EMPLOYEE_ID !== 0) {
+        setData(viewOrder);
+        }
+        else {
+          setData({"ORDER_NUMBER": "", "EMPLOYEE_ID": "", "FIRST_NAME": "", "LAST_NAME": "", "TIME": "", "PHONE_NUMBER": "", "ZIPCODE_KEY": ""});
+        }
         console.log(viewOrder);
       })
       .catch((e) => {
@@ -74,19 +146,46 @@ export default function ViewOrdersPage() {
         <TextField variant="outlined" onChange={handleId}>Order ID: </TextField>
         <Button onClick={handleSubmit}>ENTER</Button>
         </Box>
+        <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Order Number</TableCell>
+            <TableCell>Employee ID</TableCell>
+            <TableCell>First Name</TableCell>
+            <TableCell>Last Name</TableCell>
+            <TableCell>Time</TableCell>
+            <TableCell>Phone Number</TableCell>
+            <TableCell>Zipcode</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+          <TableCell>{data.ORDER_NUMBER}</TableCell>
+          <TableCell>{data.EMPLOYEE_ID}</TableCell>
+          <TableCell>{data.FIRST_NAME}</TableCell>
+          <TableCell>{data.LAST_NAME}</TableCell>
+          <TableCell>{data.TIME}</TableCell>
+          <TableCell>{data.PHONE_NUMBER}</TableCell>
+          <TableCell>{data.ZIPCODE_KEY}</TableCell>
+          </TableRow>
+        </TableBody>
+        </Table>
       </Box>
       </Grid>
       <Grid container spacing={2} margin={5}>
       <Grid>    
     <Typography variant="h1" >View Order by:</Typography>
     <Box component='form' gap={10} display='flex' marginTop={5}>
+            <Box display="flex" flexDirection="column">
             <FormControl required sx={{ m: 1, minWidth: 120 }}>
-            <InputLabel id="status_id">Sort by</InputLabel>
-            <Select labelId= "sort_by" label= "view by:" autowidth>
-              <MenuItem value={true}>Employee</MenuItem>
-              <MenuItem value={false}>Zipcode</MenuItem>
+            <InputLabel id="sort_by">Sort by</InputLabel>
+            <Select labelId= "sort_by" label= "view by:" onChange={handleSelect}>
+              <MenuItem value="Employee">Employee</MenuItem>
+              <MenuItem value="Zipcode">Zipcode</MenuItem>
             </Select>
             </FormControl>
+            <TextField label="Input" onChange={handleInput}></TextField>
+          </Box>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker label="Start" onChange={(val)=>setStart(val)} value={start} />
           </LocalizationProvider>
@@ -95,6 +194,22 @@ export default function ViewOrdersPage() {
           </LocalizationProvider>
           <Button onClick={multiOrder}>ENTER</Button>
             </Box>
+            <Table>
+        <TableHead>
+            <TableRow>
+            <TableCell>Order Number</TableCell>
+            <TableCell>Employee ID</TableCell>
+            <TableCell>First Name</TableCell>
+            <TableCell>Last Name</TableCell>
+            <TableCell>Time</TableCell>
+            <TableCell>Phone Number</TableCell>
+            <TableCell>Zipcode</TableCell>
+            </TableRow>
+        </TableHead>
+        <TableBody>
+            {DisplayData}
+        </TableBody>
+    </Table>
             
     </Grid>
     </Grid>

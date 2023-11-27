@@ -7,12 +7,20 @@ import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
 //after adding a new employee set status to active 
 export default function AddEmployee() {
+    const [employeeId, setEmployeeId] = useState();
+    const [success, setSuccess] = useState(false);
     const [openPopup, setOpenPopup] = useState(false);
     const [errorPopup, setErrorPopup] = useState(false);
     const [firstName, setFirstName] = useState({firstName: ""});
     const [lastName, setLastName] = useState({lastName: ""});
     const [password, setPassword] = useState({password: ""});
     const navigate = useNavigate();
+    const completed = () => {
+      setSuccess(true);
+    }
+    const completedClose = () => {
+      setSuccess(false);
+    }
     const handleClose = () => {
         setOpenPopup(false);
       };
@@ -46,11 +54,14 @@ export default function AddEmployee() {
           .then((response) => response.json())
           .then((newEmployee) => {
             console.log('New employee:', newEmployee);
+            console.log("the" + newEmployee.EMPLOYEE_ID)
+            setEmployeeId(newEmployee.EMPLOYEE_ID)
           })
           .catch((e) => {
             console.error(e);
           });
-        navigate("/dashboard")
+        setSuccess(true)
+        //navigate("/dashboard")
       }
 
       const handleFirstName = firstName => event => {
@@ -92,7 +103,6 @@ export default function AddEmployee() {
       name = "password"
       label="Password"
      />
-     <Typography variant="subtitle1">Your unique Employee ID: </Typography>
     <Button type = "submit" variant="outlined" onClick = {handleClick}>
       Submit
      </Button>
@@ -136,6 +146,14 @@ export default function AddEmployee() {
           <Button onClick={handleErrorClose}>OK</Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={success} onClose={completedClose}> 
+      <DialogContent> 
+        <Typography variant="subtitle1">Your unique Employee ID: </Typography>
+        </DialogContent>   
+        <DialogActions>
+          <Button onClick={completedClose}>OK</Button>
+        </DialogActions>
+    </Dialog>
    </Container>
   );
 }
