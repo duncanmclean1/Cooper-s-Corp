@@ -81,12 +81,19 @@ export default function EditEmployeePage() {
     } finally {
       setLoading(false);
     }
-    if (loading) {
-      return <div>Loading...</div>
-    }
   };
-    useEffect(() => { getData(); console.log(data)
-    }, [data]);
+    useEffect(() => {fetch('/api/showemployees', {
+      method: 'GET',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(),
+  })
+  .then((response) => response.json())
+  .then((response) => {
+      setRows(response);
+  })
+    }, []);
 
     const handleClickButton = row => {
       setData(prevEmployeeInfo => ({...prevEmployeeInfo, EMPLOYEE_ID: row.EMPLOYEE_ID, FIRST_NAME: row.FIRST_NAME, LAST_NAME: row.LAST_NAME, STATUS: row.STATUS}));
