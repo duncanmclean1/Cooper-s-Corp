@@ -195,7 +195,7 @@ public class CoopersHttpServer {
                     resultSet.next();
                     int PRODUCT_ID = resultSet.getInt("PRODUCT_ID");
                     double PRODUCT_PRICE = resultSet.getDouble("PRICE");
-                    double PRICE_PAID = PRODUCT_PRICE * orderDetailEntryJson.PRICE_PAID;
+                    double PRICE_PAID = PRODUCT_PRICE * orderDetailEntryJson.QUANTITY;
 
                     // insert new ORDER_DETAIL record
                     sqlQuery = "INSERT INTO ORDER_DETAIL (ORDER_NUMBER, PRODUCT_ID, PRICE_PAID, QUANTITY, NOTES, ORDER_DETAIL_KEY) VALUES ("
@@ -352,7 +352,8 @@ public class CoopersHttpServer {
                 JsonStructures.OrderDetailJson orderDetail = new Gson().fromJson(requestBodyJsonString,
                         JsonStructures.OrderDetailJson.class);
 
-                StringBuilder response = new StringBuilder();
+                String response;
+                JsonStructures.OrderDetail orderDetailOut = new JsonStructures.OrderDetail();
                 // send queries to snowflake
                 try {
                     String sqlQuery = "SELECT * FROM CUSTOMER_ORDER O\nJOIN EMPLOYEE E\n\tON E.EMPLOYEE_ID = O.EMPLOYEE_ID\nJOIN CUSTOMER C\n\tON C.PHONE_NUMBER = O.PHONE_NUMBER\nWHERE O.ORDER_NUMBER = "
@@ -360,27 +361,23 @@ public class CoopersHttpServer {
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
-                    int EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
-                    String PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
-                    String TIME = resultSet.getString("TIME");
-                    String FIRST_NAME = resultSet.getString("FIRST_NAME");
-                    String LAST_NAME = resultSet.getString("LAST_NAME");
-                    int ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
+                    orderDetailOut.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
+                    orderDetailOut.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
+                    orderDetailOut.TIME = resultSet.getString("TIME");
+                    orderDetailOut.FIRST_NAME = resultSet.getString("FIRST_NAME");
+                    orderDetailOut.LAST_NAME = resultSet.getString("LAST_NAME");
+                    orderDetailOut.ZIPCODE_KEY = resultSet.getInt("ZIPCODE_KEY");
 
-                    // send results
-                    response.append("{\"ORDER_NUMBER:\": " + orderDetail.ORDER_NUMBER + ", ");
-                    response.append("\"EMPLOYEE_ID\": " + EMPLOYEE_ID + ", ");
-                    response.append("\"FIRST_NAME\": \'" + FIRST_NAME + "', ");
-                    response.append("\"LAST_NAME\": \'" + LAST_NAME + "', ");
-                    response.append("\"TIME\": \'" + TIME + "', ");
-                    response.append("\"PHONE_NUMBER\": \'" + PHONE_NUMBER + "', ");
-                    response.append("\"ZIPCODE_KEY\": " + ZIPCODE_KEY + "}");
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    response.append("{\n\tSQL ERROR\n}");
+                    response = "{\n\tSQL ERROR\n}";
                     exchange.sendResponseHeaders(404, 0);
                 }
+
+                // Convert to JSON format
+                Gson gson = new Gson();
+                response = gson.toJson(orderDetailOut);
 
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.toString().getBytes());
