@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
     return (
     <Grid container spacing={2}>
         <Grid item container justifyContent="center" alignContent="center">
-            <Typography variant="h2">Coopers-Corp</Typography>
+            <Typography variant="h2">Premo Pizza</Typography>
         </Grid>
         <Grid item container justifyContent="center" alignContent="center" direction="column" spacing={2}>
             <Grid item spacing={2}>
@@ -20,7 +20,7 @@ import { useParams } from "react-router-dom";
                 </Button>
             </Grid>
             <Grid item spacing={2}>
-                <Button variant="outlined" href="/editemployee">
+            <Button variant="outlined" href={`/editemployee/${employeeId}`}>
                     Edit Employee
                 </Button>
             </Grid>

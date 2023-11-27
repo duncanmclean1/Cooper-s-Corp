@@ -73,7 +73,7 @@ export default function Login() {
             }}
           >
             <Typography component="h1" variant="h5">
-              Login To Coopers-Corp
+              Login To Premo Pizza
             </Typography>
             <Box component="form" noValidate sx={{ mt: 1 }}>
               <TextField

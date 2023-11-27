@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -24,7 +24,7 @@ function createData(name, calories, fat, carbs, protein) {
 
 
 export default function EditEmployeePage() {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
   const [loading, setLoading] = useState(false);
@@ -40,6 +40,8 @@ export default function EditEmployeePage() {
   const handleLastName = lastName => event => {
     setLastName({...lastName, [lastName]: event.target.value})
   };      
+
+  const {employeeId} = useParams();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -64,6 +66,7 @@ export default function EditEmployeePage() {
             console.error(e);
           });
           getData();
+          setOpen(false);
   };
     const getData = async () => {
     setLoading(true);
@@ -78,18 +81,23 @@ export default function EditEmployeePage() {
     } finally {
       setLoading(false);
     }
-    if (loading) {
-      return <></>
-    }
   };
-    useEffect(() => { getData(); console.log(data)
-    }, [data]);
-
+  useEffect(() => {fetch('/api/showemployees', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(),
+})
+.then((response) => response.json())
+.then((response) => {
+    setRows(response);
+})
+  }, []);
     const handleClickButton = row => {
       setData(prevEmployeeInfo => ({...prevEmployeeInfo, EMPLOYEE_ID: row.EMPLOYEE_ID, FIRST_NAME: row.FIRST_NAME, LAST_NAME: row.LAST_NAME, STATUS: row.STATUS}));
       console.log("on click", data);
       setOpen(true);
-      //navigate("editComponent")
     }
     const handleClose = () => {
       setOpen(false);
@@ -126,6 +134,8 @@ export default function EditEmployeePage() {
             
         </TableBody>
     </Table>
+    <Button onClick={()=>navigate(`/addemployee/${employeeId}`)}>Add new Employee</Button>
+    <Button onClick={()=>navigate(`/dashboard/${employeeId}`)}>Back</Button>
     <Dialog
         open={open}
         aria-labelledby="alert-dialog-title"
