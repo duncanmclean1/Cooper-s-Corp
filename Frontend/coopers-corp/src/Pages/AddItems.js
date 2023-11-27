@@ -13,6 +13,7 @@ export default function AddItems() {
     const {employeeId} = useParams();
     const [cartTotal, setCartTotal] = useState();
     const [orderDetailKey, setOrderDetailKey] = useState({ORDER_DETAIL_KEY:""});
+    const [discount, setDiscount] = useState({discount:""});
     const navigate = useNavigate();
 
         useEffect(() => {
@@ -90,6 +91,24 @@ export default function AddItems() {
             .catch((error) => console.log(error))
         }
 
+        const calculateCartTotal = (event) => {
+            event.preventDefault();
+            const caclulateTotal = {
+                "ORDER_NUMBER": orderNumber,
+                "DISCOUNT": discount.discount
+            }
+            fetch('/api/calculatecarttotal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(caclulateTotal),
+            })
+            .then((response) => response.json())
+            .then((response) => {
+                setCartTotal(response.DISCOUNTED_CART_TOTAL);
+            })
+        }
         const handleProductName = productName => event => {
             setProductName({...productName, [productName]: event.target.value})
         }
@@ -101,6 +120,9 @@ export default function AddItems() {
             setNotes({...notes, [notes]: event.target.value})
         }
 
+        const handleDiscount = discount => event => {
+            setDiscount({...discount, [discount]: event.target.value})
+        }
         return (
         <Container component="main" maxWidth="sm">
           <Box
@@ -181,6 +203,20 @@ export default function AddItems() {
                 />
             </Grid>
                 <Button fullWidth={true} onClick={handleSubmit}>Add Item</Button>
+                <Grid container spacing={2}>
+                <TextField 
+                    margin="normal"
+                    required={true}
+                    id="Discount"
+                    label="Discount"
+                    name="Discount"
+                    autoComplete="Discount"
+                    variant="outlined"
+                    value={discount.discount}
+                    onChange={handleDiscount("discount")}
+                />
+                <Button fullWidth={true} onClick={calculateCartTotal}>Apply Discount</Button>
+                </Grid>
     <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h6">Cart</Typography>
         <TableContainer component={Paper}>
