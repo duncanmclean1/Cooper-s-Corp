@@ -81,9 +81,6 @@ export default function EditEmployeePage() {
     } finally {
       setLoading(false);
     }
-    if (loading) {
-      return <div>Loading...</div>
-    }
   };
   useEffect(() => {fetch('/api/showemployees', {
     method: 'GET',
