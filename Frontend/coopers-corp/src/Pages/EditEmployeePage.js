@@ -64,6 +64,7 @@ export default function EditEmployeePage() {
             console.error(e);
           });
           getData();
+          setOpen(false);
   };
     const getData = async () => {
     setLoading(true);
@@ -79,7 +80,7 @@ export default function EditEmployeePage() {
       setLoading(false);
     }
     if (loading) {
-      return <></>
+      return <div>Loading...</div>
     }
   };
     useEffect(() => { getData(); console.log(data)
@@ -89,7 +90,6 @@ export default function EditEmployeePage() {
       setData(prevEmployeeInfo => ({...prevEmployeeInfo, EMPLOYEE_ID: row.EMPLOYEE_ID, FIRST_NAME: row.FIRST_NAME, LAST_NAME: row.LAST_NAME, STATUS: row.STATUS}));
       console.log("on click", data);
       setOpen(true);
-      //navigate("editComponent")
     }
     const handleClose = () => {
       setOpen(false);
@@ -126,6 +126,7 @@ export default function EditEmployeePage() {
             
         </TableBody>
     </Table>
+    <Button onClick={()=>navigate("/addemployee")}>Add new Employee</Button>
     <Dialog
         open={open}
         aria-labelledby="alert-dialog-title"

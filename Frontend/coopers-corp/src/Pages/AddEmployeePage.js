@@ -1,17 +1,27 @@
 
-import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
+import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography} from "@material-ui/core";
 import Box from '@mui/system/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import React, {useState} from "react";
+import { useNavigate } from "react-router-dom";
 //after adding a new employee set status to active 
 export default function AddEmployee() {
+    const [employeeId, setEmployeeId] = useState();
+    const [success, setSuccess] = useState(false);
     const [openPopup, setOpenPopup] = useState(false);
     const [errorPopup, setErrorPopup] = useState(false);
     const [firstName, setFirstName] = useState({firstName: ""});
     const [lastName, setLastName] = useState({lastName: ""});
     const [password, setPassword] = useState({password: ""});
-
+    const navigate = useNavigate();
+    const completed = () => {
+      setSuccess(true);
+    }
+    const completedClose = () => {
+      setSuccess(false);
+      navigate("/dashboard")
+    }
     const handleClose = () => {
         setOpenPopup(false);
       };
@@ -45,10 +55,13 @@ export default function AddEmployee() {
           .then((response) => response.json())
           .then((newEmployee) => {
             console.log('New employee:', newEmployee);
+            console.log("the " + newEmployee.EMPLOYEE_ID)
+            setEmployeeId(newEmployee.EMPLOYEE_ID)
           })
           .catch((e) => {
             console.error(e);
           });
+        setSuccess(true)
       }
 
       const handleFirstName = firstName => event => {
@@ -60,6 +73,7 @@ export default function AddEmployee() {
       const handlePassword = password => event => {
         setPassword({...password, [password]: event.target.value})
       }
+     
   return ( 
       <Container maxWidth='sm'>
       <Box component = 'form' display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} padding='20px'>
@@ -109,7 +123,7 @@ export default function AddEmployee() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleConfirmSubmit} autoFocus href="/dashboard">
+          <Button onClick={handleConfirmSubmit} autoFocus>
             Submit
           </Button>
         </DialogActions>
@@ -132,6 +146,14 @@ export default function AddEmployee() {
           <Button onClick={handleErrorClose}>OK</Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={success} onClose={completedClose}> 
+      <DialogContent> 
+        <Typography variant="subtitle1">Your unique Employee ID: {employeeId}</Typography>
+        </DialogContent>   
+        <DialogActions>
+          <Button onClick={completedClose}>OK</Button>
+        </DialogActions>
+    </Dialog>
    </Container>
   );
 }
