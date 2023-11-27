@@ -110,7 +110,7 @@ public class CoopersHttpServer {
                     SnowFlakeConnector.sendQuery(sqlQuery);
 
                     // update CUSTOMER_ORDER table (add new record)
-                    sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME, PRICE_PAID) VALUES (ORDER_NUMBER_SEQ.nextval, "
+                    sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME, TOTAL_PAID) VALUES (ORDER_NUMBER_SEQ.nextval, "
                         +
                         addCustomerAndOrderJson.EMPLOYEE_ID + ", '" + addCustomerAndOrderJson.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('"
                         + now.format(formatter) + "'), 0.0);";
