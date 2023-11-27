@@ -39,6 +39,7 @@ export default function ViewOrdersPage() {
   const [id, setId] = useState("");
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
+  const [numberCount, setNumberCount] = useState();
   const handleId = (event) => {
     event.preventDefault();
     setId(event.target.value);
@@ -66,6 +67,8 @@ export default function ViewOrdersPage() {
       console.log("view order" + viewOrder);
       console.log(viewOrder.ORDER_DETAILS_LIST);
       setRows(viewOrder.ORDER_DETAILS_LIST);
+      setNumberCount(viewOrder.COUNT);
+      console.log("count " + viewOrder.COUNT);
 
     })
   }
@@ -200,6 +203,7 @@ export default function ViewOrdersPage() {
           </LocalizationProvider>
           <Button onClick={multiOrder}>ENTER</Button>
             </Box>
+            <Typography variant="h6">Number {numberCount}</Typography>
             <Table>
         <TableHead>
             <TableRow>
