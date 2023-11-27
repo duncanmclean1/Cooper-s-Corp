@@ -24,7 +24,7 @@ function createData(name, calories, fat, carbs, protein) {
 
 
 export default function EditEmployeePage() {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export default function EditEmployeePage() {
   };      
 
   const {employeeId} = useParams();
-  
+
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("whatt")
@@ -82,19 +82,18 @@ export default function EditEmployeePage() {
       setLoading(false);
     }
   };
-    useEffect(() => {fetch('/api/showemployees', {
-      method: 'GET',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(),
-  })
-  .then((response) => response.json())
-  .then((response) => {
-      setRows(response);
-  })
-    }, []);
-
+  useEffect(() => {fetch('/api/showemployees', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(),
+})
+.then((response) => response.json())
+.then((response) => {
+    setRows(response);
+})
+  }, []);
     const handleClickButton = row => {
       setData(prevEmployeeInfo => ({...prevEmployeeInfo, EMPLOYEE_ID: row.EMPLOYEE_ID, FIRST_NAME: row.FIRST_NAME, LAST_NAME: row.LAST_NAME, STATUS: row.STATUS}));
       console.log("on click", data);
