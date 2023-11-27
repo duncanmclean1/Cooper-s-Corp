@@ -147,11 +147,11 @@ export default function ViewOrdersPage() {
     <Grid container spacing={2} margin={5}>
       <Box component="section">
         <Typography variant="h6" >View Single Order:</Typography>
-        <Box display="flex" flex-direction="row">
+        <Grid width='50%' >
         <Typography variant="body1" margin={5}>Order ID:</Typography>
         <TextField variant="outlined"  onChange={handleId}>Order ID: </TextField>
-        <Button onClick={handleSubmit}>ENTER</Button>
-        </Box>
+        <Button onClick={handleSubmit} variant='outlined' size='small'>ENTER</Button>
+        </Grid>
         <Table>
         <TableHead>
           <TableRow>
