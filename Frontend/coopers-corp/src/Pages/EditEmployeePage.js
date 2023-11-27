@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -41,6 +41,8 @@ export default function EditEmployeePage() {
     setLastName({...lastName, [lastName]: event.target.value})
   };      
 
+  const {employeeId} = useParams();
+  
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("whatt")
@@ -126,7 +128,7 @@ export default function EditEmployeePage() {
             
         </TableBody>
     </Table>
-    <Button onClick={()=>navigate("/addemployee")}>Add new Employee</Button>
+    <Button onClick={()=>navigate(`/addemployee/${employeeId}`)}>Add new Employee</Button>
     <Dialog
         open={open}
         aria-labelledby="alert-dialog-title"
