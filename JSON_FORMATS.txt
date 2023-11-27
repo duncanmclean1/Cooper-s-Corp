@@ -250,7 +250,7 @@ ENDPOINT: localhost:8001/api/addorderdetail
     RESPONSE BODY:
         {
             "ORDER_DETAIL_KEY: 2,
-            "CART_TOTAL":  
+            "CART_TOTAL": 
             "CART":
                 [
                     {
