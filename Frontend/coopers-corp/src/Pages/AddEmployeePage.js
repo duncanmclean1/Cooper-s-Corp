@@ -7,7 +7,7 @@ import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
 //after adding a new employee set status to active 
 export default function AddEmployee() {
-    const [employeeId, setEmployeeId] = useState();
+    const [employeeIdNew, setEmployeeIdNew] = useState();
     const [success, setSuccess] = useState(false);
     const [openPopup, setOpenPopup] = useState(false);
     const [errorPopup, setErrorPopup] = useState(false);
@@ -56,7 +56,7 @@ export default function AddEmployee() {
           .then((newEmployee) => {
             console.log('New employee:', newEmployee);
             console.log("the " + newEmployee.EMPLOYEE_ID)
-            setEmployeeId(newEmployee.EMPLOYEE_ID)
+            setEmployeeIdNew(newEmployee.EMPLOYEE_ID)
           })
           .catch((e) => {
             console.error(e);
@@ -148,7 +148,7 @@ export default function AddEmployee() {
       </Dialog>
       <Dialog open={success} onClose={completedClose}> 
       <DialogContent> 
-        <Typography variant="subtitle1">Your unique Employee ID: {employeeId}</Typography>
+        <Typography variant="subtitle1">Your unique Employee ID: {employeeIdNew}</Typography>
         </DialogContent>   
         <DialogActions>
           <Button onClick={completedClose}>OK</Button>
