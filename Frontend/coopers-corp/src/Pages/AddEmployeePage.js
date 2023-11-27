@@ -1,9 +1,10 @@
 
-import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
+import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography} from "@material-ui/core";
 import Box from '@mui/system/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import React, {useState} from "react";
+import { useNavigate } from "react-router-dom";
 //after adding a new employee set status to active 
 export default function AddEmployee() {
     const [openPopup, setOpenPopup] = useState(false);
@@ -11,7 +12,7 @@ export default function AddEmployee() {
     const [firstName, setFirstName] = useState({firstName: ""});
     const [lastName, setLastName] = useState({lastName: ""});
     const [password, setPassword] = useState({password: ""});
-
+    const navigate = useNavigate();
     const handleClose = () => {
         setOpenPopup(false);
       };
@@ -49,6 +50,7 @@ export default function AddEmployee() {
           .catch((e) => {
             console.error(e);
           });
+        navigate("/dashboard")
       }
 
       const handleFirstName = firstName => event => {
@@ -60,6 +62,7 @@ export default function AddEmployee() {
       const handlePassword = password => event => {
         setPassword({...password, [password]: event.target.value})
       }
+     
   return ( 
       <Container maxWidth='sm'>
       <Box component = 'form' display = 'flex' alignItems='center' flexDirection='column' gap={2} marginTop={5} padding='20px'>
@@ -89,6 +92,7 @@ export default function AddEmployee() {
       name = "password"
       label="Password"
      />
+     <Typography variant="subtitle1">Your unique Employee ID: </Typography>
     <Button type = "submit" variant="outlined" onClick = {handleClick}>
       Submit
      </Button>
@@ -109,7 +113,7 @@ export default function AddEmployee() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleConfirmSubmit} autoFocus href="/dashboard">
+          <Button onClick={handleConfirmSubmit} autoFocus>
             Submit
           </Button>
         </DialogActions>

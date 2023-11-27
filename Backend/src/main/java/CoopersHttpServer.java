@@ -361,6 +361,7 @@ public class CoopersHttpServer {
                     // System.out.println("sqlQuery: " + sqlQuery);
                     var resultSet = SnowFlakeConnector.sendQuery(sqlQuery);
                     resultSet.next();
+                    orderDetailOut.ORDER_NUMBER = orderDetail.ORDER_NUMBER;
                     orderDetailOut.EMPLOYEE_ID = resultSet.getInt("EMPLOYEE_ID");
                     orderDetailOut.PHONE_NUMBER = resultSet.getString("PHONE_NUMBER");
                     orderDetailOut.TIME = resultSet.getString("TIME");
