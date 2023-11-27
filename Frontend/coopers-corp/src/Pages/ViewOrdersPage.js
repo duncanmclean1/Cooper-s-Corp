@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -38,6 +38,7 @@ export default function ViewOrdersPage() {
   const [id, setId] = useState("");
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
+  const {employeeId} = useParams();
   const handleId = (event) => {
     event.preventDefault();
     setId(event.target.value);
@@ -70,7 +71,7 @@ export default function ViewOrdersPage() {
   }
   else if(sortBy==="Employee") {
     const viewEmployeeOrder = {
-      "EMPLOYEE_ID": 1234,
+      "EMPLOYEE_ID": employeeId,
       "TIME_BEGIN": formattedStartDate,
       "TIME_END": formattedEndDate
   };
