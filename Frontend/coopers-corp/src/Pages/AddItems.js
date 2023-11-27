@@ -10,10 +10,10 @@ export default function AddItems() {
     const {orderNumber} = useParams();
     const [productName, setProductName] = useState({productName:""});
     const {employeeId} = useParams();
+    const [deleteItem, setDeleteItem] = useState();
     const navigate = useNavigate();
 
-    console.log(employeeId);
-        useEffect(() => {
+    useEffect(() => {
             fetch('/api/showmenu', {
                 method: 'GET',
                 headers: {
@@ -24,10 +24,29 @@ export default function AddItems() {
             .then((response) => response.json())
             .then((response) => {
                 setMenu(response);
-                console.log(response)
             })
         }, []) 
 
+        // const handleDeleteItem = (event) => {
+        //     event.preventDefault();
+        //     useEffect(() => {
+        //         const removeOrderDetail = {
+        //             "ORDER_NUMBER": orderNumber,
+        //             "ORDER_DETAIL_KEY": deleteItem
+        //         }
+        //         fetch('/api/removeorderdetail', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             },
+        //             body: JSON.stringify(removeOrderDetail),
+        //         })
+        //         .then((response) => response.json())
+        //         .then((response) => {
+        //             setCartItems(response.CART)
+        //         })
+        //     }, [removeOrderDetail])
+        // }
         const handleSubmit = (event) => {
             event.preventDefault();
             const addOrderDetail = {
@@ -47,10 +66,15 @@ export default function AddItems() {
                 .then((response) => response.json())
                 .then((response) => {
                     setCartItems(response.CART)
+                    setDeleteItem(response.ORDER_DETAIL_KEY);
                 })
                 .catch((error) => console.log(error))
         }
         
+        // useEffect(() => {
+        //     setCartItems(cart => [...cart, cartItems])
+        //     console.log(cartItems);
+        // }, [])
         const handleCancelOrder = (event) => {
             event.preventDefault();
             const cancelOrder = {
@@ -171,7 +195,8 @@ export default function AddItems() {
                             <TableCell>Notes</TableCell>
                             <TableCell>Quantity</TableCell>
                         </TableRow>
-                    </TableHead>        
+                    </TableHead> 
+                    <TableCell>{deleteItem}</TableCell>       
         {cartItems?.map((cart, index) => (
             <TableBody key={index}>
                 <TableCell>{cart.PRODUCT_NAME}</TableCell>
