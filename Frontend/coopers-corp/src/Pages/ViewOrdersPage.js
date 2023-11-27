@@ -39,6 +39,7 @@ export default function ViewOrdersPage() {
   const [id, setId] = useState("");
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
+  const {employeeId} = useParams();
   const handleId = (event) => {
     event.preventDefault();
     setId(event.target.value);
