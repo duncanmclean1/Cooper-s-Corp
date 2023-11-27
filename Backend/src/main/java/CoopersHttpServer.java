@@ -579,7 +579,7 @@ public class CoopersHttpServer {
 
                     // send response
                     exchange.sendResponseHeaders(201, 0);
-                    response = "{\n\t\"EMPLOYEE_ID:\": " + EMPLOYEE_ID + "\n}";
+                    response = "{\n\t\"EMPLOYEE_ID\": " + EMPLOYEE_ID + "\n}";
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
                     response = "SQL error";
