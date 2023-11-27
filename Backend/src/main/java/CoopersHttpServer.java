@@ -110,10 +110,10 @@ public class CoopersHttpServer {
                     SnowFlakeConnector.sendQuery(sqlQuery);
 
                     // update CUSTOMER_ORDER table (add new record)
-                    sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME) VALUES (ORDER_NUMBER_SEQ.nextval, "
+                    sqlQuery = "INSERT INTO CUSTOMER_ORDER (ORDER_NUMBER, EMPLOYEE_ID, PHONE_NUMBER, TIME, PRICE_PAID) VALUES (ORDER_NUMBER_SEQ.nextval, "
                         +
                         addCustomerAndOrderJson.EMPLOYEE_ID + ", '" + addCustomerAndOrderJson.PHONE_NUMBER + "', TO_TIMESTAMP_NTZ('"
-                        + now.format(formatter) + "'));";
+                        + now.format(formatter) + "'), 0.0);";
                     SnowFlakeConnector.sendQuery(sqlQuery);
 
                     // grab the ORDER_NUMBER associated with the above created new CUSTOMER_ORDER record
@@ -219,6 +219,9 @@ public class CoopersHttpServer {
                         listOfOrderDetailEntries.add(detail);
                         CART_TOTAL += detail.PRICE_PAID;
                     }
+                    CART_TOTAL = Math.round(CART_TOTAL*100.0) / 100.0;
+                    sqlQuery = "UPDATE CUSTOMER_ORDER SET TOTAL_PAID = " + CART_TOTAL + " WHERE ORDER_NUMBER = " + orderDetailEntryJson.ORDER_NUMBER + ";";
+                    SnowFlakeConnector.sendQuery(sqlQuery);
                     exchange.sendResponseHeaders(201, 0);
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
@@ -272,6 +275,10 @@ public class CoopersHttpServer {
                         CART_TOTAL += detail.PRICE_PAID;
                         listOfOrderDetailEntries.add(detail);
                     }
+
+                    CART_TOTAL = Math.round(CART_TOTAL*100.0) / 100.0;
+                    sqlQuery = "UPDATE CUSTOMER_ORDER SET TOTAL_PAID = " + CART_TOTAL + " WHERE ORDER_NUMBER = " + orderDetailKeyJson.ORDER_NUMBER + ";";
+                    SnowFlakeConnector.sendQuery(sqlQuery);
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
                     exchange.sendResponseHeaders(422, 0);
@@ -704,7 +711,8 @@ public class CoopersHttpServer {
                         CART_TOTAL += resultSet.getDouble("PRICE_PAID");
                     }
                     double DISCOUNTED_CART_TOTAL = Math.round(CART_TOTAL*(100.0 - cartTotal.DISCOUNT)) / 100.0;
-
+                    sqlQuery = "UPDATE CUSTOMER_ORDER SET TOTAL_PAID = " + DISCOUNTED_CART_TOTAL + " WHERE ORDER_NUMBER = " + cartTotal.ORDER_NUMBER + ";";
+                    SnowFlakeConnector.sendQuery(sqlQuery);
                     response = "{\n\t\"DISCOUNTED_CART_TOTAL\": " + DISCOUNTED_CART_TOTAL + "\n}";
                     exchange.sendResponseHeaders(200, 0);
                 } catch (SQLException e) {
