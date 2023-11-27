@@ -1,6 +1,7 @@
 import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table, TableContainer, TableRow, TableBody, TextField, Grid} from "@material-ui/core";
+import { ToggleButton } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams } from "react-router-dom";
 
 export default function AddItems() {    
     const [menu, setMenu] = useState();
@@ -10,10 +11,11 @@ export default function AddItems() {
     const {orderNumber} = useParams();
     const [productName, setProductName] = useState({productName:""});
     const {employeeId} = useParams();
-    const [deleteItem, setDeleteItem] = useState();
+    const [cartTotal, setCartTotal] = useState();
+    const [orderDetailKey, setOrderDetailKey] = useState({ORDER_DETAIL_KEY:""});
     const navigate = useNavigate();
 
-    useEffect(() => {
+        useEffect(() => {
             fetch('/api/showmenu', {
                 method: 'GET',
                 headers: {
@@ -27,26 +29,25 @@ export default function AddItems() {
             })
         }, []) 
 
-        // const handleDeleteItem = (event) => {
-        //     event.preventDefault();
-        //     useEffect(() => {
-        //         const removeOrderDetail = {
-        //             "ORDER_NUMBER": orderNumber,
-        //             "ORDER_DETAIL_KEY": deleteItem
-        //         }
-        //         fetch('/api/removeorderdetail', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //             },
-        //             body: JSON.stringify(removeOrderDetail),
-        //         })
-        //         .then((response) => response.json())
-        //         .then((response) => {
-        //             setCartItems(response.CART)
-        //         })
-        //     }, [removeOrderDetail])
-        // }
+        const handleDelete = cart => {
+            setOrderDetailKey(detailkey => ({...detailkey, ORDER_DETAIL_KEY: cart.ORDER_DETAIL_KEY}));
+            const removeOrderDetail = {
+                "ORDER_NUMBER": orderNumber,
+                "ORDER_DETAIL_KEY": cart.ORDER_DETAIL_KEY
+            }
+            fetch('/api/removeorderdetail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(removeOrderDetail),
+            })
+            .then((response) => response.json())
+            .then((response) => {
+                setCartItems(response.CART)
+                setCartTotal(response.CART_TOTAL)
+            })
+        }
         const handleSubmit = (event) => {
             event.preventDefault();
             const addOrderDetail = {
@@ -66,15 +67,10 @@ export default function AddItems() {
                 .then((response) => response.json())
                 .then((response) => {
                     setCartItems(response.CART)
-                    setDeleteItem(response.ORDER_DETAIL_KEY);
+                    setCartTotal(response.CART_TOTAL)
                 })
                 .catch((error) => console.log(error))
         }
-        
-        // useEffect(() => {
-        //     setCartItems(cart => [...cart, cartItems])
-        //     console.log(cartItems);
-        // }, [])
         const handleCancelOrder = (event) => {
             event.preventDefault();
             const cancelOrder = {
@@ -194,22 +190,31 @@ export default function AddItems() {
                             <TableCell>Name</TableCell>
                             <TableCell>Notes</TableCell>
                             <TableCell>Quantity</TableCell>
+                            <TableCell>Price</TableCell>
                         </TableRow>
                     </TableHead> 
-                    <TableCell>{deleteItem}</TableCell>       
-        {cartItems?.map((cart, index) => (
-            <TableBody key={index}>
+        {cartItems?.map((cart) => (
+            <TableBody key={cart.ORDER_DETAIL_KEY}>
                 <TableCell>{cart.PRODUCT_NAME}</TableCell>
                 <TableCell>{cart.NOTES}</TableCell>
                 <TableCell>{cart.QUANTITY}</TableCell>
-                <Button>Delete Item</Button>
+                <TableCell>{cart.PRICE_PAID}</TableCell>
+                <Button key={cart.ORDER_DETAIL_KEY}  onClick={() => handleDelete(cart)}>Delete Item</Button>
             </TableBody>
         ))}
+        <Typography>Sub Total: {cartTotal}</Typography>
                 </Table>
             </TableContainer>
         </Box>
     </Box>
-    <Button fullWidth={true} onClick={handleCancelOrder}>Cancel Order</Button>
+    <Grid container spacing={2}>
+        <Grid item xs={6}>
+        <Button fullWidth={true} href={`/dashboard/${employeeId}`}>Submit Order</Button>
+        </Grid>
+        <Grid item xs={6}>
+        <Button fullWidth={true} onClick={handleCancelOrder}>Cancel Order</Button>
+        </Grid>
+    </Grid>
     </Box>
 </Container>
     )
