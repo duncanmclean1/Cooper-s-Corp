@@ -10,7 +10,6 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Box from '@mui/system/Box';
 import Menu from '@mui/material/Menu';
-import EditComponent from './EditComponent';
 import Select from '@mui/material/Select';
 import {MenuButton} from '@mui/base/MenuButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -28,7 +27,7 @@ export default function ViewOrdersPage() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState();
   const [zipcode, setZipcode] = useState();
-  const [employeeId, setEmployeeId] = useState();
+  const [employeeIdNew, setEmployeeIdNew] = useState();
   const [rows, setRows] = useState([]);
   const [zipcodeRows, setZipcodeRows] = useState([]);
   const [zipcodeCount, setZipcodeCount] = useState("");
@@ -40,6 +39,7 @@ export default function ViewOrdersPage() {
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
   const [numberCount, setNumberCount] = useState();
+  const {employeeId} = useParams();
   const handleId = (event) => {
     event.preventDefault();
     setId(event.target.value);
@@ -74,7 +74,7 @@ export default function ViewOrdersPage() {
   }
   else if(sortBy==="Employee") {
     const viewEmployeeOrder = {
-      "EMPLOYEE_ID": employeeId,
+      "EMPLOYEE_ID": employeeIdNew,
       "TIME_BEGIN": formattedStartDate,
       "TIME_END": formattedEndDate
   };
@@ -88,6 +88,7 @@ export default function ViewOrdersPage() {
       console.log(viewOrder);
       console.log(viewOrder.ORDER_DETAILS_LIST);
       setRows(viewOrder.ORDER_DETAILS_LIST);
+      setNumberCount(viewOrder.COUNT);
 
     })
   }
@@ -111,7 +112,7 @@ export default function ViewOrdersPage() {
     console.log(zipcode);
     }
     else if (sortBy=== "Employee"){
-      setEmployeeId(event.target.value);
+      setEmployeeIdNew(event.target.value);
     }
   }
   const handleSelect = (event) => {
@@ -149,11 +150,17 @@ export default function ViewOrdersPage() {
     <Box>
     <Grid container spacing={2} margin={5}>
       <Box component="section">
-        <Typography variant="h6" >View Single Order:</Typography>
-        <Grid width='50%' >
-        <Typography variant="body1" margin={5}>Order ID:</Typography>
+        <Typography variant="h4" >View Single Order:</Typography>
+        <Grid width='75%' marginTop={5} container spacing={2}>
+          <Grid item xs={2}>
+        <Typography variant="body1" marginTop={2}>Order ID:</Typography>
+        </Grid>
+        <Grid item xs={5}>
         <TextField variant="outlined"  onChange={handleId}>Order ID: </TextField>
-        <Button onClick={handleSubmit} variant='outlined' size='small'>ENTER</Button>
+        </Grid>
+        <Grid item xs={5} marginTop={1}>
+        <Button onClick={handleSubmit} variant='outlined'>ENTER</Button>
+        </Grid>
         </Grid>
         <Table>
         <TableHead>
@@ -183,10 +190,12 @@ export default function ViewOrdersPage() {
       </Grid>
       <Grid container spacing={2} margin={5}>
       <Grid>    
-    <Typography variant="h1" >View Order by:</Typography>
-    <Box component='form' gap={10} display='flex' marginTop={5}>
+    <Typography variant="h4" >View Order by:</Typography>
+    <Box component='form' gap={10} display='flex' flexDirection="row" marginTop={5}>
+    <Grid marginTop={1} container spacing={2}>
+      <Grid item xs={3}>
             <Box display="flex" flexDirection="column">
-            <FormControl required sx={{ m: 1, minWidth: 120 }}>
+            <FormControl required>
             <InputLabel id="sort_by">Sort by</InputLabel>
             <Select labelId= "sort_by" label= "view by:" onChange={handleSelect}>
               <MenuItem value="Employee">Employee</MenuItem>
@@ -195,15 +204,23 @@ export default function ViewOrdersPage() {
             </FormControl>
             <TextField label="Input" onChange={handleInput}></TextField>
           </Box>
+          </Grid>
+          <Grid item xs={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker label="Start" onChange={(val)=>setStart(val)} value={start} />
           </LocalizationProvider>
+          </Grid>
+          <Grid item xs={3}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker label="End" onChange={(val)=>setEnd(val)} value={end} />
           </LocalizationProvider>
-          <Button onClick={multiOrder}>ENTER</Button>
+          </Grid>
+          <Grid item xs={3}  marginTop={1}>
+          <Button onClick={multiOrder} variant='outlined' >ENTER</Button>
+          </Grid>
+          </Grid>
             </Box>
-            <Typography variant="h6">Number {numberCount}</Typography>
+            <Typography align="center" variant="h6">Count: {numberCount}</Typography>
             <Table>
         <TableHead>
             <TableRow>
@@ -220,10 +237,11 @@ export default function ViewOrdersPage() {
             {DisplayData}
         </TableBody>
     </Table>
-            
     </Grid>
     </Grid>
+    <Button onClick={()=>navigate(`/dashboard/${employeeId}`)}>Back</Button>
     </Box>
+    
 
   );
 }

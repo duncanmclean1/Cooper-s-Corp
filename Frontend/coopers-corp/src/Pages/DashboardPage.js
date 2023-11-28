@@ -15,7 +15,7 @@ import { useParams } from "react-router-dom";
                 </Button>
             </Grid>
             <Grid item spacing={2}>
-                <Button variant="outlined" href="/vieworder">
+                <Button variant="outlined" href={`/vieworder/${employeeId}`}>
                     View Order
                 </Button>
             </Grid>

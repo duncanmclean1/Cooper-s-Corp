@@ -2,7 +2,10 @@ import { Box, Button, Container, Paper, Typography, TableHead, TableCell, Table,
 import { ToggleButton } from "@mui/material";
 import { useEffect, useState } from "react";
 import {useNavigate, useParams } from "react-router-dom";
-
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
 export default function AddItems() {    
     const [menu, setMenu] = useState();
     const [quantity, setQuantity] = useState({quantity:""});
@@ -112,6 +115,10 @@ export default function AddItems() {
         const handleProductName = productName => event => {
             setProductName({...productName, [productName]: event.target.value})
         }
+        const handleProduct = (event) => {
+            setProductName({productName: event.target.value});
+            console.log(productName.productName);
+          };
         const handleQuantity = quantity => event => {
             setQuantity({...quantity, [quantity]: event.target.value})
         }
@@ -162,14 +169,27 @@ export default function AddItems() {
                     alignItems: "center",
                   }}
             > 
+                <Typography variant="h6" align="center">Add Item</Typography>
+    <Grid item xs={12}>
+        <Grid marginTop={1} container spacing={2}>
             <Grid item xs={4}>
-                <Typography variant="h6">Add Item</Typography>
+            <Box component='form' display='flex' alignItems="center" flexDirection="row" marginTop={3}>
+            <FormControl required sx={{ width: 175, marginTop: 2 }}>
+            <InputLabel id="product">Product Name</InputLabel>
+            <Select labelId= "product" label= "Product" onChange={handleProduct} autowidth>
+              <MenuItem value="SODA">SODA</MenuItem>
+              <MenuItem value="BREADSTICKS">BREADSTICKS</MenuItem>
+              <MenuItem value="PIZZA - SMALL PEPPERONI">PIZZA - SMALL PEPPERONI</MenuItem>
+              <MenuItem value="PIZZA - MEDIUM PEPPERONI">PIZZA - MEDIUM PEPPERONI</MenuItem>
+              <MenuItem value="PIZZA - LARGE PEPPERONI">PIZZA - LARGE PEPPERONI</MenuItem>
+              <MenuItem value="PIZZA - SMALL HOUSE SPECIAL">PIZZA - SMALL HOUSE SPECIAL</MenuItem>
+              <MenuItem value="PIZZA - MEDIUM HOUSE SPECIAL">PIZZA - MEDIUM HOUSE SPECIAL</MenuItem>
+              <MenuItem value="PIZZA - LARGE HOUSE SPECIAL">PIZZA - LARGE HOUSE SPECIAL</MenuItem>
+            </Select>
+            </FormControl>
+            </Box>
             </Grid>
-            <Box sx={{ minWidth: 120 }}>
-    </Box>
-            <Grid container rowSpacing={2}>
-                <Grid item xs={6}>
-                <TextField 
+                {/* <TextField 
                 margin="normal"
                 id="Product Name"
                 label="Product Name"
@@ -177,10 +197,15 @@ export default function AddItems() {
                 variant="outlined"
                 value={productName.productName}
                 onChange={handleProductName("productName")}
-                />
+                /> */}
+                <Grid item xs={4}>
                 <TextField
                 margin="normal"
                 required={true}
+                type="number"
+                InputProps={{
+                    inputProps: { min: 0 }
+                  }}
                 id="Quantity"
                 label="Quantity"
                 name="Quantity"
@@ -189,7 +214,8 @@ export default function AddItems() {
                 value={quantity.quantity}
                 onChange={handleQuantity("quantity")}
               />
-                </Grid>
+              </Grid>
+                <Grid item xs={4}>
                 <TextField 
                     margin="normal"
                     required={true}
@@ -202,8 +228,11 @@ export default function AddItems() {
                     onChange={handleNotes("notes")}
                 />
             </Grid>
-                <Button fullWidth={true} onClick={handleSubmit}>Add Item</Button>
-                <Grid container spacing={2}>
+            </Grid>
+            <Button variant='outlined' fullWidth={true} onClick={handleSubmit}>Add Item</Button>
+            </Grid>
+                <Box display="flex" justifyContent="center" alignItems="center">
+                <Grid item xs={12}>
                 <TextField 
                     margin="normal"
                     required={true}
@@ -214,9 +243,11 @@ export default function AddItems() {
                     variant="outlined"
                     value={discount.discount}
                     onChange={handleDiscount("discount")}
+                    align='center'
                 />
-                <Button fullWidth={true} onClick={calculateCartTotal}>Apply Discount</Button>
                 </Grid>
+                </Box>
+                <Button variant='outlined' fullWidth={true} onClick={calculateCartTotal}>Apply Discount</Button>
     <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h6">Cart</Typography>
         <TableContainer component={Paper}>
