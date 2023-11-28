@@ -567,7 +567,7 @@ public class CoopersHttpServer {
                         JsonStructures.AddEmployeeJson.class);
 
                 String sqlQuery = "INSERT INTO Employee VALUES ('" + addEmployee.FIRST_NAME + "', '"
-                        + addEmployee.LAST_NAME + "', 'active', '"
+                        + addEmployee.LAST_NAME + "', 'true', '"
                         + addEmployee.PASSWORD + "', EMPLOYEE_ID_SEQ.nextval);";
 
                 String response;
