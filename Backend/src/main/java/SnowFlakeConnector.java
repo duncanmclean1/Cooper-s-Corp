@@ -2,8 +2,9 @@ import java.sql.*;
 
 public class SnowFlakeConnector
 {
-    public static ResultSet sendQuery(String sqlQuery) throws SQLException {
-        
+    static Statement snowflakeStatement;
+
+    public static void OpenConnection() {
         try {
             // Replace with your actual Snowflake credentials
             String sfAccount = "YJNIQQS-PM93114";
@@ -25,15 +26,21 @@ public class SnowFlakeConnector
             );
 
             // Set the session parameters (optional)
-            Statement statement = connection.createStatement();
-            statement.execute("USE WAREHOUSE " + sfWarehouse);
-            statement.execute("USE DATABASE " + sfDatabase);
-            statement.execute("USE SCHEMA " + sfSchema);
-            statement.execute("USE ROLE " + sfRole);
-            statement.executeQuery("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
+            snowflakeStatement = connection.createStatement();
+            snowflakeStatement.execute("USE WAREHOUSE " + sfWarehouse);
+            snowflakeStatement.execute("USE DATABASE " + sfDatabase);
+            snowflakeStatement.execute("USE SCHEMA " + sfSchema);
+            snowflakeStatement.execute("USE ROLE " + sfRole);
+            snowflakeStatement.executeQuery("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static ResultSet sendQuery(String sqlQuery) throws SQLException {
+        try {
             // send, execute, and return results of requested query 'sqlQuery'
-            return statement.executeQuery(sqlQuery);
+            return snowflakeStatement.executeQuery(sqlQuery);
         } catch (Exception e) {
             e.printStackTrace();
         }

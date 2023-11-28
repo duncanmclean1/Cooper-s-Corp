@@ -756,6 +756,9 @@ public class CoopersHttpServer {
         backendServer.createContext("/api/showmenu", new ShowMenuHandler());
         backendServer.createContext("/api/calculatecarttotal", new CalculateCartTotalHandler());
 
+        // open connection to snowflake database
+        SnowFlakeConnector.OpenConnection();
+
         // start the backend server
         System.out.println("Running on port: 8001\n");
         backendServer.start();
