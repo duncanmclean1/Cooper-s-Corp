@@ -107,6 +107,7 @@ export default function AddEmployee() {
     <Button type = "submit" variant="outlined" onClick = {handleClick}>
       Submit
      </Button>
+     <Button onClick={()=>navigate(`/editemployee/${employeeId}`)}>Back</Button>
    </Box>
    <Dialog
         open={openPopup}

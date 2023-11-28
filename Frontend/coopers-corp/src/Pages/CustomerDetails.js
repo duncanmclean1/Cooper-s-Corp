@@ -102,7 +102,9 @@ export default function CustomerDetails() {
                     >
                         Add Customer
                     </Button>
-                </Box>
+                <Button fullWidth={true} onClick={()=>navigate(`/dashboard/${employeeId}`)}>Back</Button>
+                 </Box>
+                
         </Container>
     )
 }

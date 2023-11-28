@@ -10,18 +10,12 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Box from '@mui/system/Box';
 import Menu from '@mui/material/Menu';
-import EditComponent from './EditComponent';
 import Select from '@mui/material/Select';
 import {MenuButton} from '@mui/base/MenuButton';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import {FormControlLabel, Checkbox, Grid, Link, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@material-ui/core";
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-
 
 export default function EditEmployeePage() {
   const navigate = useNavigate();
@@ -45,7 +39,7 @@ export default function EditEmployeePage() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("whatt")
+    //console.log("whatt")
         const employeeUpdate = {
         "EMPLOYEE_ID": data.EMPLOYEE_ID,   
         "FIRST_NAME": firstName.FIRST_NAME === "" ? data.FIRST_NAME : firstName.FIRST_NAME,
@@ -59,8 +53,8 @@ export default function EditEmployeePage() {
           body: JSON.stringify(employeeUpdate),
         })
           .then((response) => response.json())
-          .then((newEmployee) => {
-            console.log('New employee:', newEmployee);
+          .then((response) => {
+            console.log('New employee:', response);
           })
           .catch((e) => {
             console.error(e);
@@ -68,19 +62,20 @@ export default function EditEmployeePage() {
           getData();
           setOpen(false);
   };
-    const getData = async () => {
-    setLoading(true);
-    try {
-    const actualData = await fetch('api/showemployees');
-    const result = await actualData.json();
-    setRows(result);
-    console.log("hi");
-    console.log(rows);
-    } catch (error) {
-      console.log("error");
-    } finally {
-      setLoading(false);
-    }
+    const getData =  () => {
+      fetch('/api/showemployees', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(),
+    })
+    .then((response) => response.json())
+    .then((response) => {
+        setRows(response);
+    })
+      setLoading(true);
+      
   };
   useEffect(() => {fetch('/api/showemployees', {
     method: 'GET',
@@ -93,7 +88,7 @@ export default function EditEmployeePage() {
 .then((response) => {
     setRows(response);
 })
-  }, []);
+  }, [data]);
     const handleClickButton = row => {
       setData(prevEmployeeInfo => ({...prevEmployeeInfo, EMPLOYEE_ID: row.EMPLOYEE_ID, FIRST_NAME: row.FIRST_NAME, LAST_NAME: row.LAST_NAME, STATUS: row.STATUS}));
       console.log("on click", data);
@@ -134,7 +129,9 @@ export default function EditEmployeePage() {
             
         </TableBody>
     </Table>
+    <Box display="flex" flexDirection='row' alignItems='center' justifyContent='center'>
     <Button onClick={()=>navigate(`/addemployee/${employeeId}`)}>Add new Employee</Button>
+    </Box>
     <Button onClick={()=>navigate(`/dashboard/${employeeId}`)}>Back</Button>
     <Dialog
         open={open}
