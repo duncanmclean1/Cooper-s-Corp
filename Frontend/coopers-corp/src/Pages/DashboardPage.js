@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
         <Grid item container justifyContent="center" alignContent="center">
             <Typography variant="h2">Premo Pizza</Typography>
         </Grid>
-        <Grid item container justifyContent="center" alignContent="center" direction="column" spacing={2}>
+        <Grid item container justifyContent="center" alignContent="center" direction="column" spacing={8}>
             <Grid item spacing={2}>
                 <Button variant="outlined" href={`/customerdetails/${employeeId}`}>
                     Create Order
@@ -23,6 +23,9 @@ import { useParams } from "react-router-dom";
             <Button variant="outlined" href={`/editemployee/${employeeId}`}>
                     Edit Employee
                 </Button>
+            </Grid>
+            <Grid item spacing={2}>
+                <Button variant="outlined" href="/">Log Out</Button>
             </Grid>
         </Grid>
     </Grid>
