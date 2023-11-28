@@ -11,6 +11,7 @@ export default function CustomerDetails() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const addCustomer = {
+            "EMPLOYEE_ID": employeeId,
             "PHONE_NUMBER": phoneNumber.phoneNumber,
             "ADDRESS": address.address,
             "ZIPCODE_KEY": Number(zipCode.zipCode)

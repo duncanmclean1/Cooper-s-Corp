@@ -39,6 +39,7 @@ export default function ViewOrdersPage() {
   const [id, setId] = useState("");
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
+  const {employeeId} = useParams();
   const handleId = (event) => {
     event.preventDefault();
     setId(event.target.value);
@@ -147,11 +148,11 @@ export default function ViewOrdersPage() {
     <Grid container spacing={2} margin={5}>
       <Box component="section">
         <Typography variant="h6" >View Single Order:</Typography>
-        <Box display="flex" flex-direction="row">
+        <Grid width='50%' >
         <Typography variant="body1" margin={5}>Order ID:</Typography>
         <TextField variant="outlined"  onChange={handleId}>Order ID: </TextField>
-        <Button onClick={handleSubmit}>ENTER</Button>
-        </Box>
+        <Button onClick={handleSubmit} variant='outlined' size='small'>ENTER</Button>
+        </Grid>
         <Table>
         <TableHead>
           <TableRow>
